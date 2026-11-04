@@ -60,6 +60,7 @@ function background(alt,updateSky=false){const key=Math.round(alt/150)+':'+Math.
  if(updateSky){
    vectorSky.style.background=`radial-gradient(ellipse at 100% 0%,#b4a1f122,transparent 65%),linear-gradient(146deg,${skyColour(f>.6?'#5364d5':'#5d75e9',f>.6?'#0d133a':'#111b49')} 0%,${skyColour('#6889f2','#1c285d')} 46%,${skyColour(f>.6?'#8096ee':'#88adf5','#38477e')} 100%)`;
    vectorSky.style.setProperty('--night-opacity',nightBlend.toFixed(3));
+   document.documentElement.style.background=vectorSky.style.background;   // page behind the sky matches it (toolbar/bounce)
  }
 
  texture.needsUpdate=true;

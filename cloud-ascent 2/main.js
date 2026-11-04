@@ -313,14 +313,16 @@
       el.textContent = `≈ ${m.toLocaleString()} m`;
     });
 
-    const px = M.vw * M.vh;
+    // the sky canvases are 100lvh tall (see styles.css), so draw them at that height
+    const skyH = Math.max(M.vh, Math.round(document.getElementById('sky3d').getBoundingClientRect().height) || 0);
+    const px = M.vw * skyH;
     renderScale = Math.min(1, Math.sqrt(1.4e6 / px)) * qualityScale;
     skyCanvas.width = Math.round(M.vw * renderScale);
-    skyCanvas.height = Math.round(M.vh * renderScale);
+    skyCanvas.height = Math.round(skyH * renderScale);
     dpr = Math.min(2, devicePixelRatio || 1);
     fx.width = Math.round(M.vw * dpr);
-    fx.height = Math.round(M.vh * dpr);
-    if (window.Scene3D && Scene3D.resize) Scene3D.resize(M.vw, M.vh);
+    fx.height = Math.round(skyH * dpr);
+    if (window.Scene3D && Scene3D.resize) Scene3D.resize(M.vw, skyH);
   }
 
   function altitudeAt(s) {
@@ -913,11 +915,16 @@ void main(){
   const altitudeStop = { active: null, visited: new Set(), intentUntil: 0, bypassUntil: 0, lastY: 0 };
   const STOP_TOTAL_MS = 1000;
   let liftoffLock=null;
+  const TOUCH = matchMedia('(pointer: coarse)').matches;
+  let touchScrollUntil = 0;
+  // on touch, a hold must also stop the flick's glide, or scrollTo and the glide fight (jitter)
+  const setScrollHold = on => { if (TOUCH) document.documentElement.classList.toggle('scroll-hold', on); };
+  addEventListener('touchend', () => { touchScrollUntil = performance.now() + 2500; }, { passive: true });
   function cancelAltitudeStop() {
-    liftoffLock=null;delete document.body.dataset.liftoffLock;
+    liftoffLock=null;delete document.body.dataset.liftoffLock;setScrollHold(false);
     altitudeStop.active = null;
     altitudeStop.intentUntil = 0;
-    altitudeStop.bypassUntil = performance.now() + 1200;
+    altitudeStop.bypassUntil = performance.now() + 2500;
     delete document.body.dataset.altitudeStop;
   }
   function localScrollTarget(target) {
@@ -928,6 +935,7 @@ void main(){
     altitudeStop.visited.add(t.key);
     altitudeStop.active = { tier: t, from: scrollY, start: now, input: 0, settle: REDUCED ? 0 : 420 };
     document.body.dataset.altitudeStop = t.key;
+    setScrollHold(true);
   }
   function nearbyAltitude(from, to) {
     const direction = Math.sign(to - from);
@@ -947,7 +955,7 @@ void main(){
         scrollTo({top:stop.from+(stop.y-stop.from)*p,behavior:'instant'});
         state.lastY=scrollY;return;
       }
-      liftoffLock=null;delete document.body.dataset.liftoffLock;
+      liftoffLock=null;delete document.body.dataset.liftoffLock;setScrollHold(false);
     }
     for (const t of TIERS) {
       if (state.active?.tier !== t && Math.abs(scrollY - t.centerScroll) > Math.max(260, innerHeight * .5)) state.visited.delete(t.key);
@@ -962,6 +970,7 @@ void main(){
       if (elapsed >= STOP_TOTAL_MS) {
         state.active = null;
         delete document.body.dataset.altitudeStop;
+        setScrollHold(false);
       }
     } else if (now > state.bypassUntil && now < state.intentUntil) {
       const t = nearbyAltitude(state.lastY, scrollY);
@@ -994,6 +1003,7 @@ void main(){
     if(liftoffLock){e.preventDefault();return;}
     if (localScrollTarget(e.target) || document.querySelector('dialog[open]')) return;
     altitudeStop.intentUntil = performance.now() + 1200;
+    touchScrollUntil = performance.now() + 2500;
     if (altitudeStop.active) cancelAltitudeStop();
   }, { passive: false });
   addEventListener('keydown', e => {
@@ -1032,6 +1042,7 @@ void main(){
       liftoffLock={from:scrollY,y,start:now,settle:REDUCED?0:Math.min(700,250+Math.abs(scrollY-y)*.1),until:now+(REDUCED?2100:3200)};
       document.body.dataset.liftoffLock='true';
       altitudeStop.active=null;
+      setScrollHold(true);
     }
   }
   function updateLiftoffOverlay(alt) {
@@ -1039,7 +1050,9 @@ void main(){
     interludeTitles.forEach(title=>{
       if(alt<title.height()-350&&!liftoffLock){title.armed=true;title.start=null;}
       if(title.armed&&!liftoffLock&&alt>=title.threshold()&&alt<title.height()+400){
-        startInterlude(title,now,now<altitudeStop.intentUntil&&now>altitudeStop.bypassUntil);
+        // only a scroll you're doing yourself plays (and holds for) a title; a button jump just passes it
+        const byHand=(now<altitudeStop.intentUntil||now<touchScrollUntil)&&now>altitudeStop.bypassUntil;
+        if(byHand)startInterlude(title,now,true);else title.armed=false;
       }
       if(title.start===null){title.el.style.opacity='0';return;}
       const elapsed=(now-title.start)/1000;
@@ -1216,8 +1229,11 @@ void main(){
     requestAnimationFrame(frame);
   }
 
-  let resizeT = 0;
+  let resizeT = 0, lastW = innerWidth, lastH = innerHeight;
   addEventListener('resize', () => {
+    const toolbarOnly = TOUCH && innerWidth === lastW && Math.abs(innerHeight - lastH) < 160;
+    if (toolbarOnly) return;
+    lastW = innerWidth; lastH = innerHeight;
     cancelAltitudeStop();
     clearTimeout(resizeT);
     resizeT = setTimeout(() => {

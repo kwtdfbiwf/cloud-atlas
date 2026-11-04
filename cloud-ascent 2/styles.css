@@ -872,13 +872,6 @@ body[data-reduced-motion="true"] .liftoff-letter { will-change:opacity; }
 /* ---------- Phones: one top bar, a compact altitude strip under it, content clears both ----------
    Comes last so it wins over the earlier phone patches above. */
 @media (max-width: 760px) {
-  /* soft frosted band behind the top bar, so text scrolling up fades out instead of colliding */
-  body::before {
-    content: ''; position: fixed; z-index: 9; top: 0; left: 0; right: 0; height: 128px; pointer-events: none;
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent);
-  }
-
   /* top bar: logo left; sound, field tools and day/night right */
   .brand { top: 20px; left: 16px; }
   body .sky-theme, body .sound, body .field-tools-button { top: 14px; bottom: auto; min-height: 40px; height: 40px; }
@@ -941,3 +934,11 @@ body[data-reduced-motion="true"] .liftoff-letter { will-change:opacity; }
 @media (min-width: 761px) {
   body .sound { top: 24px; bottom: auto; left: auto; right: 272px; min-height: 40px; }
 }
+
+/* The sky fills the whole screen, even while a phone's toolbar slides away or the page bounces:
+   the sky layers use the large viewport height, and the page behind them is sky-coloured (set from scene3d.js). */
+#sky, #sky3d, #fx, #vector-sky { top: 0; bottom: auto; height: 100vh; height: 100lvh; }
+html { background: #6889f2; overscroll-behavior-y: none; }
+body, body.nogl, body.has3d { background: transparent; }
+/* touch: halts a flick's glide while a title or altitude stop holds the page */
+html.scroll-hold, html.scroll-hold body { overflow: hidden; }
