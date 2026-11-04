@@ -972,7 +972,9 @@ void main(){
         delete document.body.dataset.altitudeStop;
         setScrollHold(false);
       }
-    } else if (now > state.bypassUntil && now < state.intentUntil) {
+    // Not on touch: a flick keeps gliding after the finger lifts, and grabbing it mid-glide
+    // to pull back to a level reads as a jolt. Titles still hold the page on touch.
+    } else if (!TOUCH && now > state.bypassUntil && now < state.intentUntil) {
       const t = nearbyAltitude(state.lastY, scrollY);
       if (t) beginAltitudeStop(t, now);
     }
@@ -1051,7 +1053,8 @@ void main(){
     const now=performance.now();
     interludeTitles.forEach(title=>{
       if(alt<title.height()-350&&!liftoffLock){title.armed=true;title.start=null;}
-      if(title.armed&&!liftoffLock&&alt>=title.threshold()&&alt<title.height()+400){
+      // titles mark the climb, so only play them on the way up (grabbing a downward flick is a jolt)
+      if(title.armed&&!liftoffLock&&alt>lastAltM&&alt>=title.threshold()&&alt<title.height()+400){
         // only a scroll you're doing yourself plays (and holds for) a title; a button jump just passes it
         const byHand=(now<altitudeStop.intentUntil||now<touchScrollUntil)&&now>altitudeStop.bypassUntil;
         if(byHand)startInterlude(title,now,true);else title.armed=false;
@@ -1150,7 +1153,8 @@ void main(){
       if(t.vis>.45&&!t.cardArrived){
         t.cardArrived=true;
         t.cardEntrance?.cancel();
-        if(!REDUCED)t.cardEntrance=t.card.animate([
+        // touch: no drop-in; moving the card while a flick also moves the page looks like a wobble
+        if(!REDUCED&&!TOUCH)t.cardEntrance=t.card.animate([
           {translate:'0 -18px',offset:0},
           {translate:'0 2px',offset:.78},
           {translate:'0 0',offset:1}
