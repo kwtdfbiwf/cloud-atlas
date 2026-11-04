@@ -1048,9 +1048,21 @@ void main(){
     };
     title.height=()=>altitudeAt(M.maxScroll-title.scrollY());
     title.threshold=()=>title.height()-60;
+    title.words=$$('.liftoff-word',el);
     return title;
   });
+  // Shrink a title until its widest word fits the screen (phones with larger text settings or a
+  // fallback font would otherwise push it past the edges). offsetWidth ignores the float transforms.
+  function fitTitle(title){
+    title.el.style.fontSize='';
+    const room=innerWidth*.88,widest=Math.max(...title.words.map(w=>w.offsetWidth));
+    if(widest>room)title.el.style.fontSize=`${(parseFloat(getComputedStyle(title.el).fontSize)*room/widest).toFixed(1)}px`;
+  }
+  const fitTitles=()=>interludeTitles.forEach(fitTitle);
+  fitTitles();addEventListener('resize',fitTitles);
+  document.fonts?.ready.then(fitTitles);
   function startInterlude(title,now,hold) {
+    fitTitle(title);
     title.armed=false;title.start=now;
     if(hold){
       const y=title.scrollY();
@@ -1083,7 +1095,8 @@ void main(){
         const stagger=i/Math.max(1,title.letters.length-1)*.405;
         const exit=REDUCED?smooth(1.1,1.9,elapsed):smooth(1.1+stagger,2.6+stagger,elapsed);
         letter.style.opacity=(enter*(1-exit)).toFixed(3);
-        const x=REDUCED?0:(i-(title.letters.length-1)/2)*6*exit;
+        // narrow screens spread the letters less, so they float up rather than off the sides
+        const x=REDUCED?0:(i-(title.letters.length-1)/2)*6*Math.min(1,innerWidth/900)*exit;
         const y=REDUCED?0:18*(1-enter)-(160+(i%3)*28)*exit;
         const turn=REDUCED?0:((i%2?-1:1)*(3+i%4))*exit;
         letter.style.transform=`translate(${x.toFixed(2)}px,${y.toFixed(2)}px) rotate(${turn.toFixed(2)}deg)`;

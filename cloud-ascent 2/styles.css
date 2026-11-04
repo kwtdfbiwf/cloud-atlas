@@ -859,6 +859,11 @@ body[data-reduced-motion="true"] .liftoff-letter { will-change:opacity; }
 #freezing-overlay { flex-wrap:wrap; width:90vw; max-width:1200px; font-size:clamp(60px,8.5vw,132px); column-gap:.24em; row-gap:0; text-align:center; }
 #ice-overlay { flex-wrap:wrap; text-align:center; }
 @media(max-width:700px) { #freezing-overlay { font-size:clamp(48px,10vw,70px); } }
+/* phones: every title may wrap by word inside the screen; main.js (fitTitle) shrinks any word that still won't fit */
+@media(max-width:760px) {
+  .interlude-title { flex-wrap:wrap; width:88vw; max-width:88vw; text-align:center; font-size:min(15vw,64px); }
+  #freezing-overlay { width:88vw; font-size:min(12vw,56px); }
+}
 
 /* The identification line is the card’s second reading level after its name. */
 .card .cloud-tip {
