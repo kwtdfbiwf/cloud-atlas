@@ -1025,6 +1025,8 @@ void main(){
     const el=$('#'+title.id);
     el.innerHTML=title.text.split(' ').map(word=>`<span class="liftoff-word">${[...word].map(letter=>`<span class="liftoff-letter">${letter}</span>`).join('')}</span>`).join('');
     title.el=el;title.letters=$$('.liftoff-letter',el);title.armed=true;title.start=null;
+    // the section repeating this title; its text waits until the big title has floated away
+    title.inner=$$('.interlude .inter-inner').find(inner=>$('h3',inner)?.textContent.trim()===title.text);
     title.scrollY=()=>{
       if(title.alt)return M.maxScroll-tierByKey.low.fromBottom*(title.alt/ALT.low);
       const section=$('[data-interlude="'+title.section+'"]');
@@ -1054,8 +1056,9 @@ void main(){
         const byHand=(now<altitudeStop.intentUntil||now<touchScrollUntil)&&now>altitudeStop.bypassUntil;
         if(byHand)startInterlude(title,now,true);else title.armed=false;
       }
-      if(title.start===null){title.el.style.opacity='0';return;}
+      if(title.start===null){title.el.style.opacity='0';title.inner?.classList.remove('waiting');return;}
       const elapsed=(now-title.start)/1000;
+      title.inner?.classList.toggle('waiting',elapsed<(REDUCED?1.6:2.2));
       const enter=smooth(0,.5,elapsed);
       const complete=elapsed>(REDUCED?2.1:3.2);
       title.el.style.opacity=complete?'0':'1';

@@ -942,3 +942,7 @@ html { background: #6889f2; overscroll-behavior-y: none; }
 body, body.nogl, body.has3d { background: transparent; }
 /* touch: halts a flick's glide while a title or altitude stop holds the page */
 html.scroll-hold, html.scroll-hold body { overflow: hidden; }
+
+/* An interlude's own text steps aside while its big floating title plays, then fades in. */
+.inter-inner { transition: opacity .6s ease, transform .6s ease; }
+.inter-inner.waiting { opacity: 0; transform: translateY(14px); }
