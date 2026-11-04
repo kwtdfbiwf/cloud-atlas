@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "format": "RG8",
+  "channels": [
+    "density",
+    "sun_transmittance"
+  ],
+  "bounds": [
+    [
+      -1.15,
+      -0.65,
+      -1
+    ],
+    [
+      1.15,
+      0.85,
+      1
+    ]
+  ],
+  "variants": [
+    {
+      "name": "cumulus-a.rg8",
+      "width": 128,
+      "height": 96,
+      "depth": 112,
+      "bytes": 2752512,
+      "compressedBytes": 402657,
+      "gzip": "cumulus-a.rg8.gz",
+      "lobes": 7,
+      "occupied": 167688
+    },
+    {
+      "name": "cumulus-b.rg8",
+      "width": 128,
+      "height": 96,
+      "depth": 112,
+      "bytes": 2752512,
+      "compressedBytes": 356239,
+      "gzip": "cumulus-b.rg8.gz",
+      "lobes": 7,
+      "occupied": 133458
+    },
+    {
+      "name": "cumulus-c.rg8",
+      "width": 128,
+      "height": 96,
+      "depth": 112,
+      "bytes": 2752512,
+      "compressedBytes": 319983,
+      "gzip": "cumulus-c.rg8.gz",
+      "lobes": 7,
+      "occupied": 125059
+    },
+    {
+      "name": "altocumulus.rg8",
+      "width": 128,
+      "height": 64,
+      "depth": 128,
+      "bytes": 2097152,
+      "compressedBytes": 478955,
+      "gzip": "altocumulus.rg8.gz",
+      "type": 5
+    },
+    {
+      "name": "cirrus.rg8",
+      "width": 160,
+      "height": 48,
+      "depth": 160,
+      "bytes": 2457600,
+      "compressedBytes": 39844,
+      "gzip": "cirrus.rg8.gz",
+      "type": 7
+    },
+    {
+      "name": "cirrocumulus.rg8",
+      "width": 144,
+      "height": 48,
+      "depth": 144,
+      "bytes": 1990656,
+      "compressedBytes": 352281,
+      "gzip": "cirrocumulus.rg8.gz",
+      "type": 9
+    },
+    {
+      "name": "cumulonimbus.rg8",
+      "width": 128,
+      "height": 160,
+      "depth": 96,
+      "bytes": 3932160,
+      "compressedBytes": 928488,
+      "gzip": "cumulonimbus.rg8.gz",
+      "type": 3
+    },
+    {
+      "name": "stratocumulus.rg8",
+      "width": 128,
+      "height": 64,
+      "depth": 112,
+      "bytes": 1835008,
+      "compressedBytes": 441884,
+      "gzip": "stratocumulus.rg8.gz",
+      "type": 1
+    },
+    {
+      "name": "stratus.rg8",
+      "width": 128,
+      "height": 48,
+      "depth": 112,
+      "bytes": 1376256,
+      "compressedBytes": 268455,
+      "gzip": "stratus.rg8.gz",
+      "type": 2
+    },
+    {
+      "name": "nimbostratus.rg8",
+      "width": 128,
+      "height": 80,
+      "depth": 112,
+      "bytes": 2293760,
+      "compressedBytes": 866702,
+      "gzip": "nimbostratus.rg8.gz",
+      "type": 4
+    },
+    {
+      "name": "altostratus.rg8",
+      "width": 128,
+      "height": 48,
+      "depth": 112,
+      "bytes": 1376256,
+      "compressedBytes": 139030,
+      "gzip": "altostratus.rg8.gz",
+      "type": 6
+    },
+    {
+      "name": "cirrostratus.rg8",
+      "width": 128,
+      "height": 48,
+      "depth": 128,
+      "bytes": 1572864,
+      "compressedBytes": 13558,
+      "gzip": "cirrostratus.rg8.gz",
+      "type": 8
+    }
+  ],
+  "types": {
+    "0": [
+      "cumulus-a.rg8",
+      "cumulus-b.rg8",
+      "cumulus-c.rg8"
+    ],
+    "1": [
+      "stratocumulus.rg8"
+    ],
+    "2": [
+      "stratus.rg8"
+    ],
+    "3": [
+      "cumulonimbus.rg8"
+    ],
+    "4": [
+      "nimbostratus.rg8"
+    ],
+    "5": [
+      "altocumulus.rg8"
+    ],
+    "6": [
+      "altostratus.rg8"
+    ],
+    "7": [
+      "cirrus.rg8"
+    ],
+    "8": [
+      "cirrostratus.rg8"
+    ],
+    "9": [
+      "cirrocumulus.rg8"
+    ]
+  },
+  "bakeModel": "density + precomputed sun transmittance"
+}

@@ -1,0 +1,943 @@
+:root {
+  --ink: #0e1c33;
+  --ink-soft: rgba(14, 28, 51, 0.72);
+  --ink-faint: rgba(14, 28, 51, 0.45);
+  --glass: rgba(255, 255, 255, 0.52);
+  --glass-edge: rgba(255, 255, 255, 0.75);
+  --chip: rgba(255, 255, 255, 0.42);
+  --chip-on: #0e1c33;
+  --chip-on-ink: #fff;
+  --rain: #3d74c4;
+  --hud: #0e1c33;
+  --hud-soft: rgba(14, 28, 51, 0.55);
+  --hud-line: rgba(14, 28, 51, 0.22);
+  --serif: 'Instrument Serif', 'Times New Roman', serif;
+  --sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+.dark {
+  --ink: #eef4ff;
+  --ink-soft: rgba(238, 244, 255, 0.78);
+  --ink-faint: rgba(238, 244, 255, 0.5);
+  --glass: rgba(12, 24, 54, 0.42);
+  --glass-edge: rgba(255, 255, 255, 0.18);
+  --chip: rgba(255, 255, 255, 0.12);
+  --chip-on: #eef4ff;
+  --chip-on-ink: #0e1c33;
+  --rain: #8fb6ff;
+  color: var(--ink);
+}
+
+body.high-alt {
+  --hud: #eef4ff;
+  --hud-soft: rgba(238, 244, 255, 0.6);
+  --hud-line: rgba(238, 244, 255, 0.25);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: auto; }
+
+body {
+  margin: 0;
+  background: #9cc6e8;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+body.nogl {
+  background: linear-gradient(to top, #f4dcc0 0%, #a8d0ee 30%, #4f86cc 60%, #183a74 85%, #040a1d 100%) fixed;
+}
+
+body.loading main { opacity: 0; }
+main { transition: opacity 0.8s ease; }
+
+#sky, #sky3d, #fx {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+#sky { z-index: 0; }
+#sky3d { z-index: 0; opacity: 0; transition: opacity 1.2s ease; }
+body.has3d #sky3d { opacity: 1; }
+body.has3d #sky { visibility: hidden; transition: visibility 0s 1.2s; }
+#fx { z-index: 1; pointer-events: none; }
+
+main { position: relative; z-index: 2; }
+
+/* ---------- Header + HUD ---------- */
+
+.brand {
+  position: fixed;
+  top: 22px;
+  left: clamp(16px, 4vw, 48px);
+  z-index: 10;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--hud);
+  transition: color 0.6s;
+  pointer-events: none;
+}
+.brand-mark { font-family: var(--serif); font-size: 26px; letter-spacing: 0.01em; }
+.brand-sub { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hud-soft); }
+
+.sound {
+  position: fixed;
+  left: clamp(16px, 4vw, 48px);
+  bottom: 22px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 12px;
+  font: 500 12px/1 var(--sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hud);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--hud-line);
+  border-radius: 999px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: color 0.6s, border-color 0.6s, background 0.2s;
+}
+.sound:hover { background: rgba(255, 255, 255, 0.28); }
+.sound .wave { opacity: 0.25; }
+.sound[aria-pressed='true'] .wave { opacity: 1; }
+
+/* ---------- Altitude bar: label, km readout, ruler with a ring marker, zone legend ---------- */
+.alti {
+  position: fixed;
+  right: clamp(16px, 3vw, 40px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+  font-family: var(--sans);
+  /* white on any sky: a soft dark halo keeps it legible over bright cloud as well as blue */
+  text-shadow: 0 1px 2px rgba(8, 24, 52, 0.65), 0 0 10px rgba(8, 24, 52, 0.5), 0 0 24px rgba(8, 24, 52, 0.35);
+}
+.alti-label, .alti-unit {
+  margin: 0;
+  font: 600 10px/1.35 var(--sans);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.alti-num {
+  margin: 10px 0 6px;
+  font: 500 42px/1 var(--sans);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+/* the ruler: a centre line with minor ticks every 7px and longer ones every 35px, 0–13 km */
+.ruler {
+  position: relative;
+  width: 26px;
+  height: 34vh;
+  margin: 16px 0 18px;
+  background:
+    linear-gradient(#fff, #fff) 12px 0 / 1.5px 100% no-repeat,
+    repeating-linear-gradient(to top, #fff 0 1px, transparent 1px 35px) 14px 0 / 9px 100% no-repeat,
+    repeating-linear-gradient(to top, rgba(255, 255, 255, 0.75) 0 1px, transparent 1px 7px) 14px 0 / 5px 100% no-repeat;
+  filter: drop-shadow(0 0 2px rgba(8, 24, 52, 0.7)) drop-shadow(0 0 8px rgba(8, 24, 52, 0.35));
+}
+.needle {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  margin-left: -6.25px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(14, 28, 51, 0.55);
+  transform: translateY(50%);
+  transition: bottom 0.15s linear;
+}
+.alti-zones { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.alti-zones button {
+  display: grid;
+  gap: 3px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: rgba(255, 255, 255, 0.72);
+  font: inherit;
+  text-shadow: inherit;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.alti-zones b { font: 600 10px/1 var(--sans); letter-spacing: 0.14em; text-transform: uppercase; }
+.alti-zones span { font: 400 12px/1 var(--sans); }
+.alti-zones button:hover, .alti-zones button.on { color: #fff; }
+.alti-zones button.on b { font-weight: 700; }
+
+.nudge {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 11;
+  transform: translate(-50%, 20px);
+  opacity: 0;
+  padding: 10px 18px;
+  font-size: 14px;
+  background: rgba(14, 28, 51, 0.82);
+  color: #fff;
+  border-radius: 999px;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.nudge.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Sections ---------- */
+
+.eyebrow {
+  margin: 0 0 10px;
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+h1, h2, h3 { font-family: var(--serif); font-weight: 400; margin: 0; letter-spacing: -0.01em; }
+
+.stage { min-height: 100vh; display: flex; align-items: center; padding: 0 clamp(16px, 6vw, 96px); }
+.stage-inner { max-width: 640px; }
+.stage h1 { font-size: clamp(72px, 13vw, 168px); line-height: 0.9; }
+.ground h1 { font-size: clamp(52px, 8vw, 116px); line-height: 0.95; max-width: 11ch; }
+.stage h2 { font-size: clamp(44px, 7vw, 84px); line-height: 1; margin-bottom: 18px; }
+.lede { font-size: clamp(17px, 1.6vw, 20px); color: var(--ink-soft); max-width: 34em; margin: 18px 0 0; }
+
+.ground { align-items: flex-start; padding-top: 22vh; }
+.ground .stage-inner { color: var(--ink); text-shadow: 0 1px 30px rgba(255, 245, 230, 0.6); }
+
+.hint { margin-top: 40px; display: inline-flex; align-items: center; gap: 12px; font-size: 14px; color: var(--ink-soft); }
+.hint-arrow {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--ink-faint);
+  font-size: 18px;
+  animation: rise 2.2s ease-in-out infinite;
+}
+@keyframes rise {
+  0%, 100% { transform: translateY(4px); opacity: 0.6; }
+  50% { transform: translateY(-6px); opacity: 1; }
+}
+
+.top { min-height: 130vh; align-items: center; }
+.top .stage-inner { max-width: 720px; }
+
+.interlude { height: 210vh; display: flex; align-items: center; padding: 0 clamp(16px, 6vw, 96px); }
+.inter-inner { max-width: 460px; margin-left: auto; margin-right: clamp(0px, 14vw, 220px); }
+.interlude h3 { font-size: clamp(32px, 4vw, 46px); line-height: 1.05; margin-bottom: 12px; }
+.interlude p:not(.eyebrow) { color: var(--ink-soft); margin: 0; font-size: 17px; }
+
+.tier { position: relative; height: 240vh; }
+.stick {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: 72px clamp(16px, 5vw, 72px) 40px;
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity;
+}
+.stick.live { pointer-events: auto; }
+.col { width: min(440px, 100%); display: flex; flex-direction: column; gap: 14px; max-height: 100%; }
+.tier-head h2 { font-size: clamp(38px, 4.4vw, 56px); line-height: 1; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font: 500 13px/1 var(--sans);
+  color: var(--ink);
+  background: var(--chip);
+  border: 1px solid var(--glass-edge);
+  border-radius: 999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+}
+.chip:hover { transform: translateY(-1px); }
+.chip[aria-selected='true'] { background: var(--chip-on); color: var(--chip-on-ink); border-color: transparent; }
+.drop { flex: none; width: 8px; height: 11px; }
+.chip .drop { color: var(--rain); }
+.chip[aria-selected='true'] .drop { color: currentColor; }
+.chip .seen-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0; transition: opacity 0.3s; }
+.chip.seen .seen-dot { opacity: 0.45; }
+
+.card {
+  position: relative;
+  padding: 22px 24px 20px;
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  border-radius: 20px;
+  backdrop-filter: blur(22px) saturate(1.2);
+  -webkit-backdrop-filter: blur(22px) saturate(1.2);
+  box-shadow: 0 20px 60px -30px rgba(10, 25, 60, 0.45);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.card.swap { opacity: 0; transform: translateY(6px); }
+.card-head { display: flex; align-items: center; gap: 14px; }
+.abbr {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid var(--ink-faint);
+  font: 500 15px/1 var(--mono);
+}
+.card h3 { font-size: 36px; line-height: 1; }
+.latin { margin: 4px 0 0; font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--ink-soft); }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin: 18px 0 14px; }
+.stats dt { font: 500 10px/1.3 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); }
+.stats dd { margin: 3px 0 0; font-size: 14px; font-weight: 500; }
+.rainline { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-size: 12px; margin-bottom: 14px; }
+.rainline span { font: 500 10px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); }
+.bar { height: 6px; border-radius: 6px; background: rgba(127, 140, 160, 0.25); overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #9cc3ee, var(--rain)); transition: width 0.6s ease; }
+.rainline b { font-weight: 600; }
+.live-rain {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin: -4px 0 12px;
+  padding: 5px 10px;
+  font-size: 12px; font-weight: 500;
+  color: var(--rain);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+.card p.body { margin: 0 0 10px; font-size: 14.5px; color: var(--ink-soft); }
+.card p.body b { color: var(--ink); font-weight: 600; }
+.card p.body:last-child { margin-bottom: 0; }
+
+/* ---------- Finale ---------- */
+
+.roster { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 32px 0; }
+.roster button {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  padding: 12px;
+  text-align: left;
+  color: var(--ink-faint);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  font: 500 12px/1.2 var(--sans);
+  transition: background 0.2s, color 0.2s;
+}
+.roster button b { font: 500 13px/1 var(--mono); }
+.roster button.seen { color: var(--ink); border-style: solid; background: rgba(255, 255, 255, 0.1); }
+.roster button:hover { background: rgba(255, 255, 255, 0.16); }
+
+.btn {
+  padding: 13px 22px;
+  font: 500 14px/1 var(--sans);
+  color: #0e1c33;
+  background: #eef4ff;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.btn:hover { transform: translateY(-1px); }
+
+button:focus-visible { outline: 2px solid #ffd36b; outline-offset: 2px; }
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 760px) {
+  .brand-sub { display: none; }
+  .alti { width: 64px; right: 10px; top: 14px; transform: none; }
+  .alti-label, .alti-unit { font-size: 8px; }
+  .alti-num { font-size: 24px; margin: 6px 0 4px; }
+  .ruler { height: 18vh; margin: 10px 0 10px; }
+  .alti-zones { gap: 8px; }
+  .alti-zones b { font-size: 8px; }
+  .alti-zones span { font-size: 10px; }
+  .sound { top: 60px; bottom: auto; padding: 7px 10px; }
+  .sound span { display: none; }
+  .stick { align-items: flex-end; padding: 72px 16px 16px; }
+  .col { width: 100%; gap: 10px; }
+  .tier-head h2 { font-size: 32px; }
+  .card { max-height: 40vh; padding: 18px; }
+  .card h3 { font-size: 30px; }
+  .stats { grid-template-columns: 1fr; gap: 8px; }
+  .chips { flex-wrap: wrap; }
+  .chip { flex: none; }
+  .inter-inner { margin: 0; max-width: calc(100% - 64px); }
+  .roster { grid-template-columns: repeat(2, 1fr); }
+  .ground { padding-top: 16vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint-arrow { animation: none; }
+}
+
+/* ---------- Readability over the 3D sky ----------
+   The volumetric sky can put bright cloud behind any text, so text gets a soft halo in the
+   opposite tone, and the altimeter sits on frosted glass. */
+:root { --halo: rgba(255, 255, 255, 0.55); }
+body.high-alt, .dark, .top { --halo: rgba(6, 16, 38, 0.4); }
+body.has3d .dark { --glass: rgba(10, 22, 50, 0.62); }
+body.has3d .brand, body.has3d .tier-head, body.has3d .stage-inner,
+body.has3d .inter-inner, body.has3d .nudge {
+  text-shadow: 0 0 18px var(--halo), 0 0 36px var(--halo);
+}
+
+body.has3d .roster button {
+  background: rgba(6, 16, 38, 0.32);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: rgba(238, 244, 255, 0.8);
+}
+body.has3d .roster button.seen { background: rgba(6, 16, 38, 0.5); color: #fff; }
+body.has3d .chip {
+  background: rgba(255, 255, 255, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+body.has3d .dark .chip { background: rgba(10, 22, 50, 0.5); }
+body.has3d .chip[aria-selected="true"] { background: var(--chip-on); }
+
+/* ---------- Gentle stops ----------
+   Proximity snapping: stop scrolling near a section and it settles onto it; keep scrolling and
+   nothing holds you back. */
+html { scroll-snap-type: y proximity; }
+.ground { scroll-snap-align: end; }
+/* sections are taller than the screen, and a browser treats anywhere inside a tall snap area as
+   "already snapped" — so each one gets a tiny marker at its centre to settle onto instead */
+.interlude, .top { position: relative; }
+.snap-mark { position: absolute; left: 0; top: 50%; width: 1px; height: 1px; pointer-events: none; scroll-snap-align: center; }
+
+.next-cue {
+  margin: 14px 0 0;
+  font: 500 11px/1.4 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.next-cue span { display: inline-block; animation: nudge-up 1.8s ease-in-out infinite; }
+@keyframes nudge-up { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+/* ---------- "Looking at" label: shown while the camera is turned toward a chosen cloud ---------- */
+.looking {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 7px 7px 14px;
+  border-radius: 999px;
+  background: rgba(10, 22, 50, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: #eef4ff;
+  font: 500 13px/1 var(--sans);
+  opacity: 0;
+  transform: translate(-50%, 12px);
+  pointer-events: none;
+  transition: opacity 0.4s, transform 0.4s;
+}
+.looking.on { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.looking button {
+  font: inherit;
+  color: #0e1c33;
+  background: #eef4ff;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 11px;
+  cursor: pointer;
+}
+@media (prefers-reduced-motion: reduce) { .next-cue span { animation: none; } }
+.looking { white-space: nowrap; }
+@media (max-width: 760px) {              /* phones: the card fills the bottom, so the label sits under the logo */
+  .looking { left: 16px; top: 64px; bottom: auto; transform: translate(0, -8px); font-size: 12px; }
+  .looking.on { transform: translate(0, 0); }
+}
+
+/* ---------- "From the ground" view inside each card (3D only) ---------- */
+.spotter { margin: 14px 0 16px; display: none; }
+body.has3d .spotter { display: block; }
+.spot-frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(#5f8fd0, #b9cfe6);
+}
+.spotter-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.spot-tag {
+  position: absolute; top: 8px; left: 8px; z-index: 1;
+  padding: 4px 8px; border-radius: 999px;
+  font: 500 10px/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase;
+  color: #eef4ff; background: rgba(10, 22, 50, 0.45);
+}
+.spot-scale {
+  position: absolute; left: 10px; bottom: 9px; z-index: 1;
+  display: flex; align-items: center; gap: 8px;
+  font: 500 11px/1 var(--sans); color: #fff; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.spot-scale i {
+  display: block; height: 6px; min-width: 3px;
+  border: 2px solid #fff; border-top: 0; border-radius: 0 0 3px 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+.spotter figcaption { margin-top: 8px; font-size: 13.5px; line-height: 1.45; color: var(--ink-soft); }
+.spotter figcaption b { color: var(--ink); font-weight: 600; }
+@media (max-width: 760px) { .ground .stage-inner { padding-right: 70px; } }   /* clear of the altitude bar */
+/* Field tools and a consistent low-cost sky. */
+#sky{display:none}
+body.nogl{background:#b2c7db}
+.alti{background:rgba(9,23,44,.72);border:1px solid #ffffff30;border-radius:22px;padding:16px 10px;backdrop-filter:blur(10px);text-shadow:none}
+.alti .ruler{height:25vh}.alti-zones button{color:#d4e0ef}.spotted-progress{font-size:11px;line-height:1.4;margin:14px 0 0;color:#fff}.spotted-progress span{font-weight:700}
+.spotter{display:block}.ground-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.spot-frame:has(.spotter-canvas) .ground-photo{opacity:0}.spot-rain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.journey-height,.height-note{font-size:12px;color:var(--ink-soft);line-height:1.6}.height-note{max-width:560px}
+.field-tools-button{position:fixed;z-index:13;border:1px solid #ffffff65;background:#10213bc9;color:#fff;border-radius:999px;min-height:40px;padding:10px 16px;font:500 12px var(--sans);cursor:pointer}
+.field-tools-button{top:24px;right:32px}
+#field-dialog{width:min(1060px,94vw);max-height:90svh;overflow:auto;padding:32px;background:#edf3f8;color:#10213b;border:1px solid #ffffff70;border-radius:20px;box-shadow:0 24px 100px #0005;font-family:var(--sans)}
+#field-dialog::backdrop{background:#061327bb}#field-dialog h2{font-size:36px;margin:0 40px 22px 0}.field-close{position:absolute;right:18px;top:12px;border:0;background:none;color:inherit;font-size:32px;cursor:pointer}
+.field-menu,.quiz-options{display:flex;gap:10px;flex-wrap:wrap}.field-menu{padding-bottom:20px;border-bottom:1px solid #bccbdb}.field-menu button,.quiz-options button,#quiz-next,#quiz-again{font:inherit;border:1px solid #9aaec3;border-radius:999px;padding:10px 16px;color:#10213b;background:#fff;cursor:pointer}.field-intro{font-size:14px;line-height:1.7;margin:22px 0}.cloud-compare{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.cloud-compare figure,.quiz-cloud{margin:0}.compare-view{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:10px;background:#aec7de}.compare-view img{width:100%;height:100%;object-fit:cover}.angular-marker{position:absolute;bottom:14px;left:15px;border-bottom:3px solid white;box-shadow:0 1px 3px #0006}
+.cloud-compare h3{font:600 18px var(--sans);margin:14px 0 6px}.cloud-compare p,.cloud-compare small,.field-note{font-size:12px;line-height:1.6}.field-note{margin-top:24px;color:#465b70}.quiz-cloud{max-width:580px;margin:0 auto 22px}.quiz-options{justify-content:center}.quiz-result{text-align:center;padding:36px}.quiz-result h3{font-size:56px;margin:20px 0}.answer-correct{background:#d2e9dc!important;border-color:#517762!important}#quiz-feedback{min-height:44px;line-height:1.6;margin:20px 0}button:focus-visible,summary:focus-visible{outline:3px solid #e2a645;outline-offset:4px}
+@media(max-width:760px){.alti{width:78px;right:8px;padding:12px 5px}.alti-num{font-size:30px}.alti .ruler{height:18vh}.alti-zones{gap:9px}.alti-zones span{font-size:10px}.spotted-progress{font-size:9px}.field-tools-button{top:70px;left:16px;right:auto}.looking{top:118px}.cloud-compare{grid-template-columns:1fr}.cloud-compare figure{display:grid;grid-template-columns:1.3fr 1fr;align-items:center;gap:14px}.cloud-compare h3{font-size:15px;margin-top:0}#field-dialog{padding:26px 18px}#field-dialog h2{font-size:29px}.field-menu button{font-size:12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-snap-type:none}*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.spot-rain{display:none}}
+
+body[data-reduced-motion="true"] *,body[data-reduced-motion="true"] *::before,body[data-reduced-motion="true"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+body[data-reduced-motion="true"] .spot-rain{display:none}
+@media(max-width:760px){.sound{top:auto;bottom:22px;min-height:40px}.sound span{display:inline;font-size:10px}.tier-head{padding-right:72px}}
+
+.ground .lede{color:var(--ink)}
+
+#sky-status{position:fixed;z-index:12;top:50%;left:50%;transform:translate(-50%,-50%);max-width:28rem;padding:18px 24px;border-radius:18px;background:#10213be8;color:white;text-align:center;font:500 15px var(--sans)}
+#sky-status[hidden]{display:none}
+
+.study-link{display:inline-block;margin:20px 0 0;padding:10px 16px;border:1px solid currentColor;border-radius:999px;font:500 12px var(--sans);color:inherit;text-decoration:none}.study-link:hover{background:#ffffff30}
+
+/* A little illustrated field guide. */
+:root{--sans:'Nunito',sans-serif;--serif:'Fraunces',serif;--mono:'Nunito',sans-serif;--ink:#344763;--ink-soft:#536781;--ink-faint:#6e8298;--chip-on:#47637d;--glass:#fffaf0ed;--glass-edge:#fffdf6;--hud:#344763;--hud-soft:#536781;--hud-line:#8699ab55}
+body{font-weight:600;background:#b7d8e6}h1,h2,h3{font-weight:600;letter-spacing:-.045em}.brand-mark{font-family:var(--sans);font-weight:900;letter-spacing:-.055em;font-size:28px}.brand-sub{font-weight:800;font-size:9px;letter-spacing:.15em}
+body.has3d .brand,body.has3d .tier-head,body.has3d .stage-inner,body.has3d .inter-inner,body.has3d .nudge{text-shadow:none}
+body .card{border:2px solid #fffdf6;background:#fffaf0ed;border-radius:28px;box-shadow:0 9px 0 #6d89a21a,0 20px 60px #617f9620;backdrop-filter:none}
+.card-head h3{font-size:32px}.abbr{border:1.5px solid #a4b3c3;border-radius:15px;background:#edf0e7;color:#526b80}.latin{font-family:var(--sans);font-weight:600;font-size:12px;font-style:normal}
+body.has3d .chip,body.has3d .dark .chip{background:#fffaf0d9;color:#455e78;border:1.5px solid #fffaf0;backdrop-filter:none;font-weight:800;padding:10px 16px;box-shadow:none;transition:transform .2s,background .2s}
+body.has3d .chip:hover{transform:translateY(-3px)}body.has3d .chip[aria-selected=true]{background:#496880;border-color:#496880;color:#fffaf0}
+body .alti{background:#fffaf0e8!important;color:#455e78!important;border:2px solid #fffdf6;border-radius:30px;box-shadow:0 5px 0 #7893a21a;backdrop-filter:none}
+body .alti *{color:inherit!important}.alti-num{font-family:var(--serif);font-size:38px}.alti-label,.alti-unit,.alti-zones{font-weight:800}.alti-zones button:hover{background:#e3eaf0}.alti .ruler{opacity:.6}
+body .field-tools-button,body .sound{background:#fffaf0ef;color:#455e78;border:1.5px solid #fffdf6;border-radius:24px;font-weight:800;box-shadow:0 3px 0 #718aa51a}
+body .dark,body .top{--ink:#fffaf0;--ink-soft:#fff3e4cc;--ink-faint:#fff3e499;--glass:#fffaf0ed;--glass-edge:#fffdf6;--chip-on:#47637d;--chip-on-ink:#fffaf0;color:#fffaf0}
+body .dark .card{--ink:#344763;--ink-soft:#536781;--ink-faint:#6e8298;--rain:#79a9bf;color:#344763}
+body.high-alt{--hud:#fffaf0;--hud-soft:#fff3e4cc}.spot-frame{border-radius:18px;border:1px solid #c8d5dd}.spot-tag{font-family:var(--sans);font-weight:800;background:#fffaf0dd;color:#4f6b83;border-radius:20px}.stats dt,.eyebrow,.alti-label{font-weight:800}.rainline .bar{background:#e0e8ec}.rainline .bar i{background:#8cadd0}.looking{display:none!important}
+.hint-arrow{border:1.5px solid #8da5b4;border-radius:50%;padding:6px 16px}.nudge{background:#fffaf0;color:#47637d;border-radius:25px}.top .roster button{background:#fffaf0e8!important;color:#536781!important;border:1px solid #fffaf0;border-radius:18px}.top .roster button.seen{background:#deeedc!important}#fx{display:none}button:focus-visible,a:focus-visible{outline:3px solid #d69a69;outline-offset:4px}
+@media(max-width:700px){.brand-sub{display:none}.brand-mark{font-size:23px}.card-head h3{font-size:27px}.tier-head h2{font-size:34px}.chip{padding:8px 11px!important}}
+/* Peach clay, lavender shadows, cobalt air. */
+body.clay-sky{--hud:#fff0e8;--hud-soft:#ead6ed;--ink:#fff0e8;--ink-soft:#e4d9f2;background:#184bc0}
+body.clay-sky .brand,body.clay-sky .tier-head,body.clay-sky .stage-inner,body.clay-sky .inter-inner{color:#fff0e8;text-shadow:0 2px 20px #32257533}
+body.clay-sky .card{--ink:#4f416d;--ink-soft:#756487;--ink-faint:#9586a3;background:#fff1eeeb;color:#4f416d;border-color:#ffe9e5;box-shadow:0 12px 55px #22196926}
+body.clay-sky .alti{background:#f5e7f0e8!important;color:#65517d!important;border-color:#fff0ed}
+body.clay-sky .chip{background:#eed9f4d9;color:#5d477a;border-color:#f4ddf1}
+body.clay-sky .chip[aria-selected=true]{background:#ffdbd0;border-color:#ffdbd0;color:#624d7c}
+body.clay-sky .field-tools-button,body.clay-sky .sound{background:#f6e2efed;color:#65517d;border-color:#ffe9ed}
+body.clay-sky .spot-frame{border-color:#e2c6e4}body.clay-sky .spot-tag{background:#ffe4e4dd;color:#6d5580}body.clay-sky .abbr{background:#eadcee;border-color:#d3bbdf;color:#765c8b}body.clay-sky .rainline .bar i{background:#bd9bc7}
+/* Cloud colours: opal, aqua, peach and lilac. */
+body.opal-sky .card{background:#f7f2fff0;border-color:#fdf4ff;--ink:#4f537a;--ink-soft:#73779a;color:#4f537a}
+body.opal-sky .alti{background:#eff1ffeb!important;color:#59658f!important;border-color:#f9f6ff}
+body.opal-sky .chip{background:#e7e9ffdf;color:#59658f;border-color:#eef0ff}
+body.opal-sky .chip[aria-selected=true]{background:#ffe4ed;color:#66618b;border-color:#ffeef5}
+body.opal-sky .sound,body.opal-sky .field-tools-button{background:#f4f0ffee;color:#66618b;border-color:#faf5ff}
+body.opal-sky .abbr{background:#e6e9fc;border-color:#ccd4ef;color:#7380a5}
+body.opal-sky .spot-tag{background:#f7edffdd;color:#66618b}
+
+/* Translucent panels let the moving sky soften through the glass. */
+body.opal-sky .card,
+body.clay-sky .card,
+body .card,
+#field-dialog {
+  --ink: #223454;
+  --ink-soft: #344a70;
+  --ink-faint: #4e6486;
+  color: var(--ink);
+  background: linear-gradient(135deg, rgba(255,255,255,.40), rgba(236,237,255,.22));
+  border: 1px solid rgba(255,255,255,.48);
+  -webkit-backdrop-filter: blur(22px) saturate(1.15);
+  backdrop-filter: blur(22px) saturate(1.15);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 16px 48px rgba(34,47,110,.12);
+}
+body.opal-sky .alti,
+body.clay-sky .alti,
+body .alti {
+  background: linear-gradient(145deg, rgba(255,255,255,.36), rgba(235,238,255,.18)) !important;
+  color: #263a60 !important;
+  border: 1px solid rgba(255,255,255,.48);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  backdrop-filter: blur(20px) saturate(1.15);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 10px 30px rgba(34,47,110,.1);
+}
+body.opal-sky .card .abbr,
+body.opal-sky .spot-tag {
+  background: rgba(255,255,255,.3);
+  border-color: rgba(255,255,255,.45);
+  color: #344a70;
+}
+#field-dialog::backdrop { background: rgba(26,41,88,.3); }
+#field-dialog .field-menu button,
+#field-dialog .quiz-options button,
+#field-dialog #quiz-next,
+#field-dialog #quiz-again {
+  background: rgba(255,255,255,.3);
+  border-color: rgba(255,255,255,.55);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  body.opal-sky .card, body.clay-sky .card, body .card, #field-dialog { background: rgba(235,240,255,.86); }
+  body.opal-sky .alti, body.clay-sky .alti, body .alti { background: rgba(235,240,255,.86) !important; }
+}
+/* Avoid an opacity backdrop boundary while the section is fully visible. */
+.stick { will-change: auto; }
+.card { scrollbar-color: rgba(255,255,255,.5) transparent; }
+.card::-webkit-scrollbar { width: 5px; }
+.card::-webkit-scrollbar-track { background: transparent; }
+.card::-webkit-scrollbar-thumb { background: rgba(255,255,255,.5); border-radius: 5px; }
+/* Fade individual surfaces so the glass can sample the sky behind the section. */
+.stick.live { opacity: 1 !important; }
+.stick.live .col > :not(.card),
+.stick.live .card:not(.swap) { opacity: var(--section-opacity, 1); }
+
+/* One readout and four layer stops, instead of a second competing scale. */
+body .alti { width: 158px; padding: 18px 12px 13px; border-radius: 25px; }
+.alti-reading { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin: 6px 0 1px; }
+body .alti-num { font: 500 36px/1.15 var(--serif); margin: 0; letter-spacing: -.04em; }
+.alti-km { font: 700 12px var(--sans); }
+body .alti-label { font-size: 9px; letter-spacing: .13em; }
+body .alti-unit { font: 600 10px/1.4 var(--sans); text-transform: none; letter-spacing: 0; opacity: .75; }
+body .alti-zones { position: relative; align-self: stretch; gap: 4px; margin: 18px 0 0; padding: 0; }
+.alti-zones::before { content: ''; position: absolute; top: 21px; bottom: 21px; left: 14px; width: 1px; background: rgba(255,255,255,.5); pointer-events: none; }
+body .alti-zones button { position: relative; width: 100%; min-height: 42px; padding: 8px 9px 8px 29px; border: 1px solid transparent; border-radius: 13px; grid-template-columns: 1fr auto; align-items: center; gap: 5px; text-align: left; transition: background .2s, border-color .2s; }
+.alti-zones button::before { content: ''; position: absolute; left: 10px; top: 50%; width: 7px; height: 7px; border: 1px solid rgba(255,255,255,.8); border-radius: 50%; transform: translateY(-50%); background: #9daff0; }
+body .alti-zones b { font: 700 12px/1.2 var(--sans); letter-spacing: 0; text-transform: none; }
+body .alti-zones span { font: 600 10px/1.2 var(--sans); opacity: .68; white-space: nowrap; }
+body .alti-zones button:hover { background: rgba(255,255,255,.17); }
+body .alti-zones button.on { background: rgba(255,255,255,.31); border-color: rgba(255,255,255,.48); }
+.alti-zones button.on::before { background: #5467a9; border-color: white; box-shadow: 0 0 0 3px rgba(255,255,255,.25); }
+body .alti .spotted-progress { border-top: 1px solid rgba(255,255,255,.25); padding-top: 10px; margin: 11px 0 0; font-size: 10px; opacity: .72; }
+@media(max-width:760px) {
+  body .alti { width: 112px; right: 10px; top: 14px; transform: none; padding: 12px 7px 9px; border-radius: 20px; }
+  body .alti-num { font-size: 28px; }
+  body .alti-label { font-size: 8px; letter-spacing: .05em; }
+  body .alti-unit { font-size: 9px; }
+  body .alti-zones { margin-top: 12px; gap: 2px; }
+  body .alti-zones button { min-height: 33px; padding: 6px 5px 6px 20px; gap: 2px; border-radius: 10px; }
+  .alti-zones::before { left: 9px; top: 16px; bottom: 16px; }
+  .alti-zones button::before { left: 5px; width: 6px; height: 6px; }
+  body .alti-zones b { font-size: 10px; }
+  body .alti-zones span { font-size: 8px; }
+  body .alti .spotted-progress { font-size: 9px; padding-top: 8px; margin-top: 8px; }
+  .ground .stage-inner { padding-right: 110px; }
+  .inter-inner { max-width: calc(100% - 110px); }
+}
+
+/* Water beads on the rain-makers' frosted glass, rather than falling line effects. */
+.glass-raindrops { position: sticky; top: 0; height: 0; width: 100%; z-index: 5; pointer-events: none; user-select: none; }
+.rain-bead {
+  position: absolute; left: var(--bead-x); top: var(--bead-y);
+  width: var(--bead-w); height: var(--bead-h); display: block;
+  border-radius: 48% 52% 46% 54% / 38% 40% 60% 62%;
+  background: radial-gradient(ellipse at 32% 23%, rgba(255,255,255,.9) 0 5%, rgba(255,255,255,.25) 13%, transparent 37%), linear-gradient(145deg, rgba(193,218,255,.08) 30%, rgba(226,238,255,.36));
+  border: 1px solid rgba(242,249,255,.6);
+  box-shadow: inset 1px 1px 1px rgba(255,255,255,.54), inset -1px -2px 2px rgba(70,98,157,.35), 1px 2px 3px rgba(32,61,123,.17);
+  opacity: .8;
+}
+.rain-bead::after { content: ''; position: absolute; bottom: 2px; left: 22%; width: 46%; height: 2px; border-radius: 50%; background: rgba(255,255,255,.7); }
+.rain-bead-slide { animation: glass-bead-slide var(--bead-duration) var(--bead-delay) ease-in infinite; }
+@keyframes glass-bead-slide {
+  0%, 48% { transform: translateY(0); opacity: .65; }
+  78% { opacity: .9; }
+  95% { transform: translateY(var(--bead-travel)); opacity: .85; }
+  100% { transform: translateY(var(--bead-travel)); opacity: 0; }
+}
+body[data-reduced-motion="true"] .rain-bead-slide { animation: none; }
+@media (prefers-reduced-motion: reduce) { .rain-bead-slide { animation: none; } }
+@media(max-width:760px) { .rain-bead { scale: .85; } }
+/* Generated photographic water lenses: preserve their transparent alpha. */
+.glass-raindrops-photo { pointer-events: none; }
+.rain-glass-texture {
+  position: absolute; top: -22px; left: -24px; width: calc(100% + 48px);
+  height: auto; max-width: none; display: block; opacity: .78;
+  pointer-events: none; user-select: none; -webkit-user-drag: none;
+}
+@media(max-width:760px) { .rain-glass-texture { top: -18px; left: -18px; width: calc(100% + 36px); } }
+/* Keep the photographic lenses in the glass margins and leave headings clear. */
+.rain-glass-texture {
+  left: -54px; width: calc(100% + 108px); opacity: .6;
+  clip-path: inset(110px 0 0);
+  -webkit-mask-image: linear-gradient(to right, #000 13%, transparent 24%, transparent 76%, #000 87%);
+  mask-image: linear-gradient(to right, #000 13%, transparent 24%, transparent 76%, #000 87%);
+}
+@media(max-width:760px) { .rain-glass-texture { left: -44px; width: calc(100% + 88px); clip-path: inset(95px 0 0); } }
+
+/* Wet patches reveal the live sky, below the card's readable foreground. */
+.card:has(.glass-water-surface) { overflow-x: hidden; }
+.glass-raindrops-live {
+  top: var(--glass-pad-y, 22px); z-index: 0;
+  pointer-events: none; user-select: none;
+}
+.glass-water-surface {
+  position: absolute; display: block; pointer-events: none; user-select: none;
+  border-radius: 27px; max-width: none;
+}
+.card:has(.glass-water-surface) > :not(.glass-raindrops-live) { position: relative; z-index: 1; }
+@media(max-width:760px){.glass-raindrops-live{top:var(--glass-pad-y,18px);}}
+/* The sky renderer now supplies the frosted surface and its wet lenses together. */
+body.opal-sky .card.live-water-pane,
+body.clay-sky .card.live-water-pane,
+body .card.live-water-pane {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.glass-raindrops-live { display: none; }
+
+/* The guided altitude stops own snapping; native proximity snap can skip a level. */
+html { scroll-snap-type: none; }
+
+/* Cards belong to their altitude in the journey and scroll away with it. */
+.tier > .stick { position: absolute; top: calc(50% - 50vh); left: 0; width: 100%; }
+
+/* Keep the scroll thumb inside the straight sides of the rounded glass. */
+.card { scrollbar-width: auto; scrollbar-color: auto; }
+.card::-webkit-scrollbar { width: 10px; }
+.card::-webkit-scrollbar-track { background: transparent; margin-block: 28px; }
+.card::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.55);
+  background-clip: padding-box;
+  border: 3px solid transparent;
+  border-radius: 999px;
+}
+.card::-webkit-scrollbar-thumb:hover { background-color: rgba(255,255,255,.8); }
+.card::-webkit-scrollbar-corner { background: transparent; }
+
+/* Day / night sky control. */
+.sky-theme { position: fixed; z-index: 13; top: 24px; right: 150px; min-height: 40px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 15px; border-radius: 999px; border: 1px solid rgba(255,255,255,.65); background: #f4f0ffee; color: #66618b; font: 800 12px var(--sans); cursor: pointer; transition: background .35s, color .35s; }
+.sky-theme svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+body.night-sky { background: #111b49; --hud: #edf0ff; --hud-soft: #bec9eb; }
+body.night-sky .card, body.night-sky .dark .card, body.night-sky #field-dialog {
+  --ink: #edf0ff; --ink-soft: #d0daf5; --ink-faint: #aebfe7;
+  color: var(--ink); background: linear-gradient(135deg,rgba(61,74,125,.58),rgba(29,40,84,.45)); border-color: #b8c8ff55; box-shadow: inset 0 1px 0 #dde4ff20,0 16px 48px #060e3230;
+}
+body.night-sky .alti { background: linear-gradient(145deg,#3d4a7d99,#1d285473)!important; color:#edf0ff!important; border-color:#b8c8ff55; }
+body.night-sky .alti-zones button:hover,body.night-sky .alti-zones button[aria-current=true] { background:#cad7ff20; }
+body.night-sky .sky-theme, body.night-sky .field-tools-button, body.night-sky .sound { color:#edf0ff; background:#263560de; border-color:#b8c8ff66; }
+body.night-sky .chip { background:#34436dcc; color:#dfe7ff; border-color:#b8c8ff66; }
+body.night-sky .chip[aria-selected=true] { background:#ddd4f0; color:#303b65; border-color:#eee4ff; }
+body.night-sky .card .abbr, body.night-sky .spot-tag { background:#a6b9f02e; color:#e5ecff; border-color:#b8c8ff55; }
+body.night-sky .spot-frame { border-color:#b8c8ff55; }
+body.night-sky .rainline .bar { background:#b8c8ff33; }
+body.night-sky .rainline .bar i { background:#c1b2e4; }
+body.night-sky #field-dialog .field-menu button,body.night-sky #field-dialog .quiz-options button,body.night-sky #field-dialog #quiz-next,body.night-sky #field-dialog #quiz-again { color:#edf0ff; background:#a6b9f02e; border-color:#b8c8ff55; }
+body.night-sky .field-close,body.night-sky .field-note { color:#d0daf5; }
+body.night-sky .brand,body.night-sky .tier-head,body.night-sky .stage-inner,body.night-sky .inter-inner { color:#f0efff; }
+@media(max-width:760px) { .sky-theme { top:20px; right:16px; padding:9px 12px; min-height:40px; } }
+@media(prefers-reduced-motion:reduce) { .sky-theme { transition:none; } }
+
+/* Vector night details sit behind the clouds, without texture scaling or blur. */
+#vector-sky { position:fixed; inset:0; z-index:0; pointer-events:none; background:#6889f2; }
+#night-stars { position:absolute; inset:0; display:block; fill:#e5ebff; opacity:var(--night-opacity,0); }
+#night-moon { position:absolute; top:8%; right:22%; width:clamp(48px,5vw,72px); height:auto; fill:#fff0d4; opacity:var(--night-opacity,0); }
+@media(max-width:760px) { #night-moon { right:17%; top:15%; width:48px; } }
+
+/* A soft moon halo around the crisp SVG crescent. */
+#night-moon { overflow:visible; filter:drop-shadow(0 0 5px rgba(255,240,204,.75)) drop-shadow(0 0 18px rgba(236,225,255,.6)) drop-shadow(0 0 44px rgba(186,194,255,.4)); }
+
+/* A selected cloud reads distinctly from both hovered and already-spotted clouds. */
+body.has3d .chip[aria-selected="true"] {
+  background:#364b83; color:#fff; border-color:#ecedff;
+  box-shadow:none;
+}
+/* Selection is a tab state; reserve the small dot for spotted progress. */
+body.has3d .chip[aria-selected="true"] .seen-dot { width:5px; height:5px; opacity:0; background:currentColor; }
+body.has3d .chip.seen[aria-selected="true"] .seen-dot { opacity:.45; }
+body.night-sky .chip[aria-selected="true"] {
+  background:#ece5ff; color:#28355d; border-color:#fff7ff;
+  box-shadow:none;
+}
+
+
+/* Scroll through a soft cloud bank between levels; the guide remains readable above it. */
+#cloud-crossing {
+  position:fixed; inset:-22vh -12vw; z-index:1; pointer-events:none; opacity:0;
+  background:
+    radial-gradient(ellipse at 6% 44%,rgba(247,244,255,.9) 0%,rgba(239,239,255,.6) 20%,rgba(239,239,255,0) 49%),
+    radial-gradient(ellipse at 94% 59%,rgba(255,243,236,.85) 0%,rgba(245,237,255,.5) 23%,rgba(245,237,255,0) 53%),
+    radial-gradient(ellipse at 47% 70%,rgba(244,242,255,.6) 0%,rgba(244,242,255,0) 58%);
+  will-change:transform,opacity;
+}
+body.night-sky #cloud-crossing {
+  background:
+    radial-gradient(ellipse at 6% 44%,rgba(147,155,210,.7) 0%,rgba(126,139,196,.4) 20%,rgba(126,139,196,0) 49%),
+    radial-gradient(ellipse at 94% 59%,rgba(175,155,208,.65) 0%,rgba(147,139,196,.35) 23%,rgba(147,139,196,0) 53%),
+    radial-gradient(ellipse at 47% 70%,rgba(147,155,210,.4) 0%,rgba(147,155,210,0) 58%);
+}
+@media(prefers-reduced-motion:reduce) { #cloud-crossing { display:none; } }
+
+/* Daybreak / nightfall: sharp celestial artwork travels behind the cloud layer. */
+#day-sun { position:absolute; top:8%; right:22%; width:clamp(48px,5vw,72px); height:clamp(48px,5vw,72px); }
+.day-sun-disc { position:absolute; inset:0; width:100%; height:100%; fill:#fff1c7; overflow:visible; filter:drop-shadow(0 0 7px #ffe4a4b0) drop-shadow(0 0 28px #ffddb166); }
+#day-sun-halo { position:absolute; width:350%; height:350%; left:-125%; top:-125%; opacity:0; transition:opacity .5s ease; }
+body.night-sky #day-sun { opacity:0; }
+#day-sun,#night-moon { will-change:transform,opacity; }
+@media(max-width:760px) { #day-sun { top:15%; right:17%; width:48px; height:48px; } }
+body[data-reduced-motion="true"] #day-sun,body[data-reduced-motion="true"] #night-moon { will-change:opacity; }
+
+/* Rain stays behind the information layer and never intercepts pointer events. */
+#window-rain { position:fixed; inset:0; width:100%; height:100%; z-index:1; pointer-events:none; opacity:0; transition:opacity .6s ease; }
+body[data-reduced-motion="true"] #window-rain { transition:opacity .25s ease; }
+
+/* Rain remains visible through the glass rather than sitting over the copy. */
+body:has(#window-rain[data-active="true"]) .card {
+  -webkit-backdrop-filter:blur(3px) saturate(1.1);
+  backdrop-filter:blur(3px) saturate(1.1);
+  background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(236,237,255,.18));
+}
+body.night-sky:has(#window-rain[data-active="true"]) .card {
+  background:linear-gradient(135deg,rgba(61,74,125,.42),rgba(29,40,84,.3));
+}
+
+/* The sun is composited behind clouds; a transparent target preserves dragging. */
+#day-sun { position:fixed; z-index:0; pointer-events:none; user-select:none; -webkit-user-select:none; }
+#day-sun svg { pointer-events:none; }
+#sun-drag-target { position:fixed; z-index:12; padding:0; border:0; border-radius:50%; background:transparent; touch-action:none; cursor:grab; user-select:none; -webkit-tap-highlight-color:transparent; }
+#sun-drag-target.is-dragging { cursor:grabbing; }
+#sun-drag-target:focus-visible { outline:2px solid #fff4d0; outline-offset:5px; }
+#sun-drag-target::after { content:'Drag to move the light'; position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); white-space:nowrap; padding:6px 10px; border-radius:999px; background:rgba(37,48,88,.8); color:#fff6e8; font:700 11px/1.3 var(--sans); opacity:0; pointer-events:none; transition:opacity .18s; }
+#sun-drag-target:hover::after,#sun-drag-target:focus-visible::after { opacity:1; }
+#sun-drag-target.is-dragging::after { opacity:0; }
+.sun-help { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0; }
+
+/* A separate lift-off overlay; the original interlude remains untouched. */
+.interlude-title {
+  position:fixed; z-index:4; top:50%; left:50%; max-width:94vw; width:max-content; display:flex; justify-content:center; gap:.24em;
+  pointer-events:none; user-select:none; opacity:0;
+  font-family:var(--sans); font-weight:900; font-size:clamp(76px,11vw,180px);
+  line-height:1.05; letter-spacing:-.055em; color:#fff7ed;
+  text-shadow:0 4px 28px rgba(43,53,125,.14);
+  transform:translate(-50%,-50%); will-change:transform,opacity;
+}
+@media(max-width:700px) { .interlude-title { font-size:clamp(60px,13vw,96px); } }
+body[data-reduced-motion="true"] .interlude-title { will-change:opacity; }
+
+.liftoff-word { display:inline-flex; white-space:nowrap; }
+.liftoff-letter { display:inline-block; will-change:transform,opacity; }
+body[data-reduced-motion="true"] .liftoff-letter { will-change:opacity; }
+
+/* Longer titles wrap by word while remaining centred over their section. */
+#freezing-overlay { flex-wrap:wrap; width:90vw; max-width:1200px; font-size:clamp(60px,8.5vw,132px); column-gap:.24em; row-gap:0; text-align:center; }
+#ice-overlay { flex-wrap:wrap; text-align:center; }
+@media(max-width:700px) { #freezing-overlay { font-size:clamp(48px,10vw,70px); } }
+
+/* The identification line is the card’s second reading level after its name. */
+.card .cloud-tip {
+  margin:16px 0 18px;
+  font-family:var(--sans);font-size:21px;font-weight:800;
+  line-height:1.25;letter-spacing:-.025em;color:var(--ink);
+  text-wrap:pretty;
+}
+@media(max-width:700px){.card .cloud-tip{font-size:19px;margin:12px 0 14px;}}
+
+/* ---------- Phones: one top bar, a compact altitude strip under it, content clears both ----------
+   Comes last so it wins over the earlier phone patches above. */
+@media (max-width: 760px) {
+  /* soft frosted band behind the top bar, so text scrolling up fades out instead of colliding */
+  body::before {
+    content: ''; position: fixed; z-index: 9; top: 0; left: 0; right: 0; height: 128px; pointer-events: none;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent);
+  }
+
+  /* top bar: logo left; sound, field tools and day/night right */
+  .brand { top: 20px; left: 16px; }
+  body .sky-theme, body .sound, body .field-tools-button { top: 14px; bottom: auto; min-height: 40px; height: 40px; }
+  body .sky-theme { right: 16px; width: 40px; padding: 0; justify-content: center; }
+  body .sky-theme span { display: none; }
+  body .field-tools-button { right: 64px; left: auto; padding: 0 14px; }
+  body .sound { left: auto; right: 162px; width: 40px; padding: 0; justify-content: center; }
+  body .sound span { display: none; }
+
+  /* altitude: a single row under the top bar instead of a tall column over the content */
+  html body .alti {
+    top: 66px; left: 16px; right: 16px; width: auto; transform: none;
+    flex-direction: row; align-items: center; gap: 10px;
+    padding: 5px 5px 5px 14px; border-radius: 16px;
+  }
+  html body .alti-label, html body .alti-unit, html body .alti .spotted-progress, html body .alti .ruler { display: none; }
+  html body .alti-reading { margin: 0; flex: none; }
+  html body .alti-num { font-size: 22px; }
+  html body .alti-zones { display: flex; flex: 1; gap: 2px; margin: 0; }
+  html body .alti-zones li { flex: 1; }
+  .alti-zones::before, .alti-zones button::before { display: none; }
+  html body .alti-zones button { min-height: 34px; padding: 0 4px; justify-content: center; text-align: center; border-radius: 11px; }
+  html body .alti-zones span { display: none; }
+  html body .alti-zones b { font-size: 11px; }
+
+  /* content starts below the bar + strip; the card takes what's left and scrolls inside itself */
+  .stick { padding: 124px 16px 16px; }
+  .col { max-height: 100%; }
+  .card { flex: 1 1 auto; min-height: 0; max-height: none; }
+  .tier-head { padding-right: 0; }
+  .ground { padding-top: 124px; }
+  .ground .stage-inner { padding-right: 0; }
+  .inter-inner { max-width: 100%; }
+  .nudge { bottom: 18px; }
+}
+
+/* ---------- Laptops/desktops: the whole card fits on screen at each altitude stop, no inner scrolling ----------
+   A slightly wider column puts the chips on one row; the ground view becomes a wide strip; tighter rhythm. */
+@media (min-width: 761px) {
+  .col { width: min(500px, 100%); gap: 12px; }
+  .card { padding: 20px 24px 18px; }
+  .card .cloud-tip { margin: 10px 0 12px; font-size: 20px; }
+  .spotter { margin: 0 0 12px; }
+  .spot-frame { aspect-ratio: 2.6 / 1; }
+  .spotter figcaption { margin-top: 6px; }
+  .stats { margin: 12px 0 10px; }
+  .rainline { margin-bottom: 10px; }
+  .card p.body { margin-bottom: 6px; }
+}
+/* shorter laptop screens: trim the ground view further */
+@media (min-width: 761px) and (max-height: 820px) {
+  .stick { padding-top: 64px; padding-bottom: 20px; }
+  .col { gap: 10px; }
+  .tier-head h2 { font-size: 44px; }
+  .spot-frame { aspect-ratio: 4 / 1; }
+  .card .cloud-tip { font-size: 18px; margin: 8px 0 10px; }
+  .card p.body { font-size: 14px; line-height: 1.45; }
+}
+/* sound sits in the top-right row with the other controls, so it never covers a card */
+@media (min-width: 761px) {
+  body .sound { top: 24px; bottom: auto; left: auto; right: 272px; min-height: 40px; }
+}

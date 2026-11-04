@@ -1,0 +1,33 @@
+CLOUD ASCENT 2 — AUDIT IMPROVEMENTS
+
+Run locally from this folder: python3 -m http.server 4190 --bind 127.0.0.1
+Open http://127.0.0.1:4190
+
+Changes:
+- Noise buffers build in a module worker and transfer to the renderer once.
+- Initial raymarch pixel budget: 180,000 desktop / 90,000 constrained-device hint.
+- Resolution steps strictly decrease; 44–64 view-march steps depending on quality.
+- Slow rendering at the minimum setting switches to the lightweight photographic sky.
+- Offscreen/background-tab work and repeated ground-view rendering are limited.
+- Camera altitude follows scroll directly; section text, HUD and camera share the same position.
+- Broader, flatter storm anvil; firmer cumulus density; darker altostratus; coarser silky cirrus ground fibres.
+- Visible near-ground rain for Nimbostratus and Cumulonimbus.
+- Separate typical cloud-base ranges from the height/viewpoint in this specific journey.
+- Permanent spotted progress with local persistence; consistent overlapping altitude bands.
+- Field tools: three-up same-field-of-view comparison and a four-question identification quiz.
+- Ground-view text descriptions, dark altimeter backing, keyboard tabs and modal focus handling.
+- Reduced motion uses a still sky, instant navigation, no camera turns, no rain or decorative movement.
+
+Verification:
+- Run node tests/verify.mjs for deterministic noise-buffer output, complete cloud records/assets,
+  decreasing quality steps and pixel budgets.
+- Desktop browser: worker completion, 3D rendering, comparison snapshots, all four correct quiz
+  answers and an incorrect answer checked.
+- Compatibility paths: ?lightweight, ?motion=reduce and ?no-webgl2.
+- Phone-sized responsive layout checked in-browser; NOT a physical Android performance test.
+- No guaranteed frame rate on untested hardware. Procedural appearance still merits artistic review.
+- The existing 3d/cloud-ascent-layout.glb is unchanged. No Blender project was edited.
+
+Sources for learning content: existing project cloud cards. Height ranges overlap; the view height is
+not a definition of cloud base. Field tools use live ground-view snapshots in 3D mode and separate
+photographic-style stills in lightweight mode. These are educational illustrations, not live weather.

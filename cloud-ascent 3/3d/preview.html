@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ascent 3D Preview</title>
+<style>
+  :root { --ink: #fff; --glass: rgba(10, 20, 40, 0.35); }
+  html, body { margin: 0; background: #b9cbe0; font-family: system-ui, sans-serif; color: var(--ink); }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  #track { height: 1400vh; }
+  #hud { position: fixed; left: 16px; bottom: 16px; padding: 10px 14px; border-radius: 12px; background: var(--glass); backdrop-filter: blur(8px); font-variant-numeric: tabular-nums; }
+  #hud b { font-size: 22px; display: block; }
+  #label { position: fixed; right: 16px; top: 16px; max-width: 260px; padding: 12px 14px; border-radius: 12px; background: var(--glass); backdrop-filter: blur(8px); opacity: 0; transition: opacity .4s; }
+  #label.on { opacity: 1; }
+  #label small { opacity: .75; text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="track"></div>
+<div id="hud"><b id="alt">0 m</b>scroll up to rise</div>
+<div id="label"><small id="tier"></small><div id="name" style="font-size:20px;font-weight:600"></div></div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.add(new THREE.HemisphereLight(0xdfeaff, 0x6a7a60, 1.6));
+
+const gltf = await new GLTFLoader().loadAsync('cloud-ascent.glb');
+scene.add(gltf.scene);
+gltf.scene.traverse(o => {
+  if (o.isDirectionalLight) o.intensity = 2.2;           // Blender exports sun as lux; tame it
+  if (o.isMesh && o.material.transparent) {
+    o.material.depthWrite = false;                       // transparent texels must not hide what's behind
+    o.renderOrder = 1;
+  }
+});
+
+const cam = gltf.cameras[0];
+const mixer = new THREE.AnimationMixer(gltf.scene);
+const clip = gltf.animations[0];
+const action = mixer.clipAction(clip); action.play(); action.paused = true;
+
+const markers = [];
+gltf.scene.traverse(o => { if (o.userData && o.userData.altitude_m) markers.push(o.userData); });
+markers.sort((a, b) => a.altitude_m - b.altitude_m);
+
+function resize() {
+  renderer.setSize(innerWidth, innerHeight);
+  cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix();
+}
+addEventListener('resize', resize); resize();
+
+// start at the ground (bottom of the page); scrolling up = climbing
+const maxScroll = () => document.documentElement.scrollHeight - innerHeight;
+history.scrollRestoration = 'manual';
+scrollTo(0, maxScroll());
+requestAnimationFrame(() => scrollTo(0, maxScroll()));
+let p = 0;
+const snap = new URLSearchParams(location.search).has('snap');
+function frame() {
+  const target = 1 - scrollY / maxScroll();
+  p = snap ? target : p + (target - p) * 0.08;
+  action.time = p * clip.duration; mixer.update(0);
+  const alt = Math.round(p * 1270) * 10;
+  document.getElementById('alt').textContent = alt.toLocaleString() + ' m';
+  const near = markers.find(m => Math.abs(m.altitude_m - alt) < 450);
+  const lab = document.getElementById('label');
+  if (near) { document.getElementById('name').textContent = near.name; document.getElementById('tier').textContent = near.tier + ' · ' + near.altitude_m.toLocaleString() + ' m'; }
+  lab.classList.toggle('on', !!near);
+  renderer.render(scene, cam);
+  requestAnimationFrame(frame);
+}
+frame();
+</script>
+</body>
+</html>

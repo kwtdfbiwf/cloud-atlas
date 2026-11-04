@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Cu_0",
+    "vertices": 5562,
+    "faces": 8529
+  },
+  {
+    "name": "Cu_1",
+    "vertices": 6386,
+    "faces": 9739
+  },
+  {
+    "name": "Cu_2",
+    "vertices": 6297,
+    "faces": 9350
+  },
+  {
+    "name": "Sc",
+    "vertices": 9869,
+    "faces": 14894
+  },
+  {
+    "name": "St",
+    "vertices": 9094,
+    "faces": 13533
+  },
+  {
+    "name": "As",
+    "vertices": 8340,
+    "faces": 12275
+  },
+  {
+    "name": "Ns",
+    "vertices": 14316,
+    "faces": 21329
+  },
+  {
+    "name": "Cs",
+    "vertices": 7313,
+    "faces": 10370
+  },
+  {
+    "name": "Ac",
+    "vertices": 8986,
+    "faces": 14147
+  },
+  {
+    "name": "Cc",
+    "vertices": 9026,
+    "faces": 14311
+  },
+  {
+    "name": "Cb",
+    "vertices": 12721,
+    "faces": 19331
+  },
+  {
+    "name": "Ci",
+    "vertices": 9192,
+    "faces": 8832
+  }
+]
