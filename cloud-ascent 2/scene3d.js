@@ -53,6 +53,7 @@ function skyColour(day,night){
  const overcast=new THREE.Color(middle?'#586b85':lower?'#8493a9':'#40516b').lerp(new THREE.Color(middle?'#1c2b42':lower?'#34445d':'#111b2c'),nightBlend);
  return colour.lerp(overcast,stormBlend*.94).getStyle();
 }
+const themeColour=document.querySelector('meta[name="theme-color"]');
 function background(alt,updateSky=false){const key=Math.round(alt/150)+':'+Math.round(nightBlend*60)+':'+Math.round(stormBlend*60);if(key===bgKey)return;bgKey=key;
  const f=clamp(alt/12500,0,1),g=bctx.createLinearGradient(0,0,512,768);
  g.addColorStop(0,skyColour(f>.6?'#5364d5':'#5d75e9',f>.6?'#0d133a':'#111b49'));g.addColorStop(.46,skyColour('#6889f2','#1c285d'));g.addColorStop(1,skyColour(f>.6?'#8096ee':'#88adf5','#38477e'));bctx.fillStyle=g;bctx.fillRect(0,0,512,768);
@@ -60,7 +61,11 @@ function background(alt,updateSky=false){const key=Math.round(alt/150)+':'+Math.
  if(updateSky){
    vectorSky.style.background=`radial-gradient(ellipse at 100% 0%,#b4a1f122,transparent 65%),linear-gradient(146deg,${skyColour(f>.6?'#5364d5':'#5d75e9',f>.6?'#0d133a':'#111b49')} 0%,${skyColour('#6889f2','#1c285d')} 46%,${skyColour(f>.6?'#8096ee':'#88adf5','#38477e')} 100%)`;
    vectorSky.style.setProperty('--night-opacity',nightBlend.toFixed(3));
-   document.documentElement.style.background=vectorSky.style.background;   // page behind the sky matches it (toolbar/bounce)
+   // phones paint toolbar/bounce edges with the page's solid colour (not its gradient), so give both
+   const edge=skyColour('#6889f2','#1c285d');
+   document.documentElement.style.background=vectorSky.style.background;
+   document.documentElement.style.backgroundColor=edge;
+   themeColour?.setAttribute('content',edge);
  }
 
  texture.needsUpdate=true;
