@@ -74,12 +74,13 @@ export function createWindowRain() {
       });
       size();
       const instance=new window.RaindropFX({canvas,background:source,windowOverlay:true,
-        spawnSize:[48,88],spawnInterval:[.18,.32],spawnLimit:140,
-        dropletsPerSeconds:30,dropletSize:[4,10],gravity:740,slipRate:.3,
+        // tuned to read clearly on a phone: more drops, stronger lensing, brighter glints, darker rims
+        spawnSize:[48,88],spawnInterval:[.1,.2],spawnLimit:230,
+        dropletsPerSeconds:70,dropletSize:[4,11],gravity:740,slipRate:.3,
         motionInterval:[.6,1.5],evaporate:5,backgroundBlurSteps:1,mist:false,
-        smoothRaindrop:[.94,.99],refractBase:.16,refractScale:.28,
-        raindropDiffuseLight:[.22,.23,.26],raindropShadowOffset:.8,
-        raindropSpecularLight:[.19,.19,.18],raindropSpecularShininess:120});
+        smoothRaindrop:[.93,.99],refractBase:.34,refractScale:.55,
+        raindropDiffuseLight:[.34,.35,.4],raindropShadowOffset:.66,
+        raindropSpecularLight:[.62,.62,.58],raindropSpecularShininess:56});
       await instance.renderer.loadAssets();
       // Seed a few beads before the first visible frame, without running extra GPU frames.
       for(let i=0;i<24;i++)instance.simulator.update({dt:.1,total:i*.1});
@@ -108,7 +109,7 @@ export function createWindowRain() {
     if(clock-lastDraw<1/30)return;
     const dt=frame.reduced?0:Math.min(.07,lastDraw<0?1/30:clock-lastDraw);
     lastDraw=clock;
-    fx.options.spawnInterval=frame.id===3?[.14,.24]:[.22,.38];
+    fx.options.spawnInterval=frame.id===3?[.08,.15]:[.12,.22];
     const tick={dt,total:clock};
     fx.simulator.update(tick);
     fx.renderer.render([...fx.simulator.raindrops,...stationaryBeads(frame.id)],tick);

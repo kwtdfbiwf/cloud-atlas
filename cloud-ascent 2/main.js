@@ -139,7 +139,8 @@
     return ''; // Rain effects are temporarily disabled.
   }
 
-  function cardHTML(c) {
+  // `open`: phones show only the name and tip until the card is expanded (see .card-toggle in styles.css)
+  function cardHTML(c, open = false) {
     return `
       ${glassRaindrops(c)}
       <div class="card-head">
@@ -147,6 +148,9 @@
         <div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div>
       </div>
       <p class="cloud-tip">${c.tip}</p>
+      <button type="button" class="card-toggle" aria-expanded="${open}">
+        <span class="more">Show more about ${c.name.toLowerCase()}</span><span class="less">Show less</span>
+      </button>
       <figure class="spotter">
         <div class="spot-frame" role="img" aria-label="${c.look}"><img class="ground-photo" src="${c.image}" alt="" loading="lazy" />
           <span class="spot-tag">From the ground</span>
@@ -172,6 +176,13 @@
         ${c.rainFx ? DROP : ''}${c.name}</button>`;
     }).join('');
     t.card.innerHTML = cardHTML(byId[t.cur]);
+    t.card.addEventListener('click', e => {
+      const toggle = e.target.closest('.card-toggle');
+      if (!toggle) return;
+      const open = t.card.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(open));
+      if (!open) t.card.scrollTop = 0;
+    });
     t.chips.addEventListener('click', e => {
       const b = e.target.closest('.chip');
       if (!b) return;
@@ -199,7 +210,7 @@
     $$('.chip', t.chips).forEach(b => (b.setAttribute('aria-selected', +b.dataset.id === id), b.tabIndex=+b.dataset.id===id?0:-1));
     t.card.classList.add('swap');
     setTimeout(() => {
-      t.card.innerHTML = cardHTML(byId[id]);
+      t.card.innerHTML = cardHTML(byId[id], t.card.classList.contains('open'));
       t.card.scrollTop = 0;
       t.card.classList.remove('swap');
     }, 200);
@@ -1059,7 +1070,8 @@ void main(){
         const byHand=(now<altitudeStop.intentUntil||now<touchScrollUntil)&&now>altitudeStop.bypassUntil;
         if(byHand)startInterlude(title,now,true);else title.armed=false;
       }
-      if(title.start===null){title.el.style.opacity='0';title.inner?.classList.remove('waiting');return;}
+      // the section text stays hidden while its title is still to come, so it never flashes up first
+      if(title.start===null){title.el.style.opacity='0';title.inner?.classList.toggle('waiting',title.armed);return;}
       const elapsed=(now-title.start)/1000;
       title.inner?.classList.toggle('waiting',elapsed<(REDUCED?1.6:2.2));
       const enter=smooth(0,.5,elapsed);

@@ -1,4 +1,4 @@
-import {createWindowRain} from './window-rain.js?v=2';
+import {createWindowRain} from './window-rain.js?v=3';
 import * as THREE from 'three';
 import {createLiveGlassRain} from './live-glass-rain.js?v=3';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
