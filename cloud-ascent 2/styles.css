@@ -852,7 +852,9 @@ body.night-sky:has(#window-rain[data-active="true"]) .card {
 body[data-reduced-motion="true"] .interlude-title { will-change:opacity; }
 
 .liftoff-word { display:inline-flex; white-space:nowrap; }
-.liftoff-letter { display:inline-block; will-change:transform,opacity; }
+/* Safari crops a blurred box to its own edges; with the tight letter-spacing, glyphs poke outside
+   their boxes. Pad each letter (and cancel the padding with margin) so the whole glyph sits inside. */
+.liftoff-letter { display:inline-block; will-change:transform,opacity; padding:.12em .14em .2em; margin:-.12em -.14em -.2em; }
 body[data-reduced-motion="true"] .liftoff-letter { will-change:opacity; }
 
 /* Longer titles wrap by word while remaining centred over their section. */

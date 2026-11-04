@@ -1100,7 +1100,7 @@ void main(){
         const y=REDUCED?0:18*(1-enter)-(160+(i%3)*28)*exit;
         const turn=REDUCED?0:((i%2?-1:1)*(3+i%4))*exit;
         letter.style.transform=`translate(${x.toFixed(2)}px,${y.toFixed(2)}px) rotate(${turn.toFixed(2)}deg)`;
-        letter.style.filter=REDUCED?'none':`blur(${(exit*5).toFixed(2)}px)`;
+        letter.style.filter=REDUCED||exit<.01?'none':`blur(${(exit*5).toFixed(2)}px)`;
       });
     });
   }
