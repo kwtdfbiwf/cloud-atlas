@@ -2,6 +2,7 @@ import {createWindowRain} from './window-rain.js?v=3';
 import * as THREE from 'three';
 import {createLiveGlassRain} from './live-glass-rain.js?v=3';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 const S=window.Scene3D={ok:false,unavailable:false,rainBox:()=>null};
 const canvas=document.querySelector('#sky3d');
 const vectorSky=document.querySelector('#vector-sky');
@@ -71,7 +72,9 @@ function background(alt,updateSky=false){const key=Math.round(alt/150)+':'+Math.
  texture.needsUpdate=true;
 }
 background(0,true);
-const gltf=await new GLTFLoader().loadAsync('reference-clouds/reference-clouds.glb');
+const draco=new DRACOLoader().setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/');
+const gltf=await new GLTFLoader().setDRACOLoader(draco).loadAsync('reference-clouds/reference-clouds.glb?v=draco-1');
+draco.dispose();
 // Soft opalescent colour is painted by surface direction, not expensive lights.
 // The minimum shade stays lavender-blue, so undersides never fall into black.
 function opalMaterial(){return new THREE.ShaderMaterial({
