@@ -1,4 +1,4 @@
-import {createWindowRain} from './window-rain.js?v=3';
+import {createWindowRain} from './window-rain.js?v=location-rain-2';
 import * as THREE from 'three';
 import {createLiveGlassRain} from './live-glass-rain.js?v=3';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
@@ -242,7 +242,7 @@ function prepare(id,alt,opacity=1,ground=false){
  for(const mesh of g.children){const d=mesh.userData;mesh.position.x=d.x+Math.sin(time*.07+d.phase)*2;mesh.position.y=d.y;const alpha=opacity*(id===8?.2:id===6?.65:id===7?.82:1);mesh.material.transparent=alpha<.999;mesh.material.opacity=alpha;mesh.material.uniforms.uOpacity.value=alpha;mesh.material.uniforms.uMotion.value=ground||window.SkyPreferences?.reduced?0:1;mesh.material.depthWrite=alpha>.98;}
  return g;
 }
-S.render=({alt=0,activeId=null,waterCard=null,waterOpacity=1,selections={low:0,mid:5,high:7},dt=.016})=>{
+S.render=({alt=0,clearSky=false,weatherRain=null,activeId=null,waterCard=null,waterOpacity=1,selections={low:0,mid:5,high:7},dt=.016})=>{
  const reduced=window.SkyPreferences?.reduced;time+=reduced?0:Math.min(dt,.05);
  const targetNight=document.body.classList.contains('night-sky')?1:0;
  if(targetNight!==phaseTarget){
@@ -253,7 +253,7 @@ S.render=({alt=0,activeId=null,waterCard=null,waterOpacity=1,selections={low:0,m
  const phaseProgress=clamp(phaseElapsed/phaseDuration,0,1);
  nightBlend=THREE.MathUtils.lerp(phaseStart,phaseTarget,softStep(0,1,phaseProgress));
  if(phaseProgress===1)nightBlend=phaseTarget;
- const stormTarget=(activeId===3||activeId===4)?clamp(waterOpacity,0,1):0;
+ const stormTarget=weatherRain!==null?clamp(weatherRain,0,1):(activeId===3||activeId===4)?clamp(waterOpacity,0,1):0;
  stormBlend=THREE.MathUtils.damp(stormBlend,stormTarget,reduced?7:3.6,Math.min(dt,.05));
  if(Math.abs(stormBlend-stormTarget)<.002)stormBlend=stormTarget;
  document.body.dataset.storm=stormBlend.toFixed(3);
@@ -267,14 +267,15 @@ S.render=({alt=0,activeId=null,waterCard=null,waterOpacity=1,selections={low:0,m
  if(rain.visible){for(let i=0;i<48;i++){const r=rand(i*79+83),x=(r()-.5)*22+6,y=layers[id].position.y-4-((r()*13+time*(2+r()*2))%14);rainDummy.position.set(x,y,-r()*10);rainDummy.scale.set(.035,.16,.035);rainDummy.updateMatrix();rain.setMatrixAt(i,rainDummy.matrix);}rain.instanceMatrix.needsUpdate=true;}
  halo.visible=false;sun.visible=false;for(let i=0;i<sparkles.length;i++)sparkles[i].material.opacity=.28+Math.sin(time*.7+i)*.18;
  if(mix<1){const g=layers[previous];g.visible=true;g.position.y=clamp((levels[previous]-alt)/1800,-2.5,2.5)*13;for(const m of g.children){m.material.transparent=true;m.material.opacity=(1-mix)*(previous===8?.2:previous===6?.65:previous===7?.82:1);m.material.uniforms.uOpacity.value=m.material.opacity;m.material.depthWrite=false;}}
- updateLightning(dt,activeId===3&&waterOpacity>.6,reduced);
+ updateLightning(dt,!clearSky&&activeId===3&&waterOpacity>.6,reduced);
  camera.position.set(0,0,w<h?42:34);camera.lookAt(w>900?-2:0,1,0);
  // SVG sky sits behind the transparent cloud canvas, so clouds occlude the stars.
  scene.background=null;
+ if(clearSky){layers.forEach(g=>g.visible=false);lightning.visible=false;}
  if(!glassRain.render({scene,camera,card:waterCard,time,reduced,width:w,height:h,opacity:waterOpacity})){renderer.setRenderTarget(null);renderer.render(scene,camera);}
- windowRain.render({id,activeId,visibility:waterOpacity,sky:canvas,background:bg,reduced,dt});
+ windowRain.render({weatherRain,id:clearSky?-1:id,activeId:clearSky?null:activeId,visibility:clearSky?0:waterOpacity,sky:canvas,background:bg,reduced,dt});
  scene.background=texture;
- document.body.dataset.cloudType=labels[id];canvas.setAttribute('aria-label',window.CLOUDS.find(c=>c.id===id)?.look||labels[id]);
+ document.body.dataset.cloudType=clearSky?'clear':labels[id];canvas.setAttribute('aria-label',clearSky?'Clear sky at this altitude':window.CLOUDS.find(c=>c.id===id)?.look||labels[id]);
 };
 const spot=document.createElement('canvas');spot.className='spotter-canvas';let rt=null;
 S.spotter={canvas:spot,vfov:60,render(id,width,height){

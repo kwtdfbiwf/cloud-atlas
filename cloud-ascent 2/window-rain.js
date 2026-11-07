@@ -12,8 +12,8 @@ export function createWindowRain() {
   const beadLayout=[[.11,.10,60],[.87,.08,76],[.95,.25,48],[.045,.49,65],[.92,.60,78],[.09,.77,56],[.94,.88,68],[.48,.71,48]];
   let fixedBeads=[];
   function stationaryBeads(id) {
-    if(id!==3&&id!==4)return [];
-    const card=document.querySelector(`.tier[data-tier="${id===3?'low':'mid'}"] .card`);
+    if(id!==3&&id!==4&&!document.body.hasAttribute('data-personal-sky'))return [];
+    const card=document.querySelector('.personal-layer.is-current .card')||document.querySelector(`.tier[data-tier="${id===3?'low':'mid'}"] .card`);
     const template=fx.simulator.raindrops[0];
     if(!card||!template)return [];
     const rect=card.getBoundingClientRect(),scaleX=width/innerWidth,scaleY=height/innerHeight;
@@ -91,7 +91,9 @@ export function createWindowRain() {
   return {render(frame) {
     try {
     clock+=Math.min(frame.dt,.05);
-    const wet=(frame.id===3||frame.id===4)&&frame.activeId!==null?Math.max(0,Math.min(1,frame.visibility)):0;
+    const weatherDriven=frame.weatherRain!==null&&frame.weatherRain!==undefined;
+    const wet=weatherDriven?Math.max(0,Math.min(1,frame.weatherRain)):(frame.id===3||frame.id===4)&&frame.activeId!==null?Math.max(0,Math.min(1,frame.visibility)):0;
+    canvas.dataset.source=weatherDriven?'weather':'cloud';
     canvas.style.opacity=String(wet);
     canvas.dataset.active=wet>.01?'true':'false';
     if(wet>.01)lastWet=clock;
@@ -109,7 +111,7 @@ export function createWindowRain() {
     if(clock-lastDraw<1/30)return;
     const dt=frame.reduced?0:Math.min(.07,lastDraw<0?1/30:clock-lastDraw);
     lastDraw=clock;
-    fx.options.spawnInterval=frame.id===3?[.08,.15]:[.12,.22];
+    fx.options.spawnInterval=weatherDriven?[.12/Math.max(.3,wet),.22/Math.max(.3,wet)]:frame.id===3?[.08,.15]:[.12,.22];
     const tick={dt,total:clock};
     fx.simulator.update(tick);
     fx.renderer.render([...fx.simulator.raindrops,...stationaryBeads(frame.id)],tick);
