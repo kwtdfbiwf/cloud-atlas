@@ -250,11 +250,12 @@
   function jumpTo(t) {
     cancelAltitudeStop();
     altitudeStop.visited.add(t.key);
+    markJump(t.centerScroll);
     scrollTo({ top: t.centerScroll, behavior: REDUCED ? 'auto' : 'smooth' });
   }
   $$('[data-jump]').forEach(b => b.addEventListener('click', () =>
-    b.dataset.jump === 'ground' ? (cancelAltitudeStop(), scrollTo({ top: M.maxScroll, behavior: REDUCED ? 'auto' : 'smooth' })) : jumpTo(tierByKey[b.dataset.jump])));
-  $('#descend').addEventListener('click', () => { cancelAltitudeStop(); scrollTo({ top: M.maxScroll, behavior: REDUCED ? 'auto' : 'smooth' }); });
+    b.dataset.jump === 'ground' ? (cancelAltitudeStop(), markJump(M.maxScroll), scrollTo({ top: M.maxScroll, behavior: REDUCED ? 'auto' : 'smooth' })) : jumpTo(tierByKey[b.dataset.jump])));
+  $('#descend').addEventListener('click', () => { cancelAltitudeStop(); markJump(M.maxScroll); scrollTo({ top: M.maxScroll, behavior: REDUCED ? 'auto' : 'smooth' }); });
 
   // gentle stops: a snap marker at the centre of every section (see .snap-mark in styles.css)
   $$('.tier, .interlude, .top').forEach(sec => sec.insertAdjacentHTML('beforeend', '<span class="snap-mark" aria-hidden="true"></span>'));
@@ -923,7 +924,12 @@ void main(){
 
   // A small, interruptible arrival at each altitude; never pull back from a long scroll.
   // A tier rearms only after leaving its neighbourhood, so one gesture cannot trap you.
-  const altitudeStop = { active: null, visited: new Set(), intentUntil: 0, bypassUntil: 0, lastY: 0 };
+  const altitudeStop = { active: null, visited: new Set(), intentUntil: 0, bypassUntil: 0, lastY: 0, jump: null };
+  function markJump(top) { altitudeStop.jump = { top, until: performance.now() + 4000 }; }
+  // any scroll of your own ends a button jump (titles then hold again)
+  const endJump = () => { altitudeStop.jump = null; };
+  addEventListener('touchstart', endJump, { passive: true });
+  addEventListener('wheel', endJump, { passive: true });
   const STOP_TOTAL_MS = 1000;
   let liftoffLock=null;
   const TOUCH = matchMedia('(pointer: coarse)').matches;
@@ -1072,16 +1078,33 @@ void main(){
       setScrollHold(true);
     }
   }
+  // Each title is a barrier on the way up: however fast you scroll, reaching or crossing its
+  // spot holds the page there until it has fully played. Works on the real scroll position (not
+  // the eased camera), so a fast flick can't skip it. A button jump passes titles instead.
+  let barrierY=null;
+  function titleBarrier(now){
+    const y=scrollY,prev=barrierY;barrierY=y;
+    const jump=altitudeStop.jump;
+    const jumping=!!jump&&now<jump.until&&Math.abs(y-jump.top)>4;
+    if(jump&&!jumping)altitudeStop.jump=null;
+    const spots=interludeTitles.map(title=>[title,title.scrollY()]);
+    // opening the page part-way up: titles already behind you don't pull you back
+    if(prev===null){spots.forEach(([title,ty])=>{if(y<ty-2)title.armed=false;});return;}
+    if(liftoffLock)return;
+    for(const [title,ty] of spots){
+      // well back below a title: it plays again next time you climb past
+      if(y>ty+innerHeight*.6&&!title.armed){title.armed=true;title.start=null;}
+    }
+    if(!(y<prev))return; // only on the way up (scrollY falls as you climb)
+    // the lowest unplayed title you've reached
+    const hit=spots.filter(([title,ty])=>title.armed&&y<=ty+2).sort((a,b)=>b[1]-a[1])[0];
+    if(!hit)return;
+    if(jumping){spots.forEach(([title,ty])=>{if(y<=ty+2)title.armed=false;});return;}
+    startInterlude(hit[0],now,true);
+  }
   function updateLiftoffOverlay(alt) {
     const now=performance.now();
     interludeTitles.forEach(title=>{
-      if(alt<title.height()-350&&!liftoffLock){title.armed=true;title.start=null;}
-      // titles mark the climb, so only play them on the way up (grabbing a downward flick is a jolt)
-      if(title.armed&&!liftoffLock&&alt>lastAltM&&alt>=title.threshold()&&alt<title.height()+400){
-        // only a scroll you're doing yourself plays (and holds for) a title; a button jump just passes it
-        const byHand=(now<altitudeStop.intentUntil||now<touchScrollUntil)&&now>altitudeStop.bypassUntil;
-        if(byHand)startInterlude(title,now,true);else title.armed=false;
-      }
       // the section text stays hidden while its title is still to come, so it never flashes up first
       if(title.start===null){title.el.style.opacity='0';title.inner?.classList.toggle('waiting',title.armed);return;}
       const elapsed=(now-title.start)/1000;
@@ -1162,6 +1185,7 @@ void main(){
     }
 
     updateAltitudeStop(nowMs);
+    titleBarrier(nowMs);
     const target = M.maxScroll - scrollY;
     const prevCam = camS;
     camS = target; // camera, section and altimeter use the same scroll position
