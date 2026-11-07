@@ -143,6 +143,8 @@
   function cardHTML(c, open = false) {
     return `
       ${glassRaindrops(c)}
+      <span class="sheet-handle" aria-hidden="true"></span>
+      <button type="button" class="sheet-close" aria-label="Close ${c.name.toLowerCase()} details">×</button>
       <div class="card-head">
         <span class="abbr">${c.abbr}</span>
         <div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div>
@@ -169,6 +171,27 @@
       <p class="body"><b>Did you know?</b> ${c.fact}</p>`;
   }
 
+  // Phones: a closed card is a small preview docked at the bottom; opened, it becomes a bottom
+  // sheet over a dimmed sky, and the page underneath stays put until it's closed.
+  const PHONE = matchMedia('(max-width: 760px)');
+  function setCardOpen(t, open, byKeyboard = false) {
+    t.card.classList.toggle('open', open);
+    t.card.querySelector('.card-toggle')?.setAttribute('aria-expanded', String(open));
+    const anyOpen = PHONE.matches && TIERS.some(x => x.card.classList.contains('open'));
+    document.documentElement.classList.toggle('sheet-open', anyOpen);
+    t.card.scrollTop = 0;
+    // keyboard users land on the close button (and back on the toggle); taps don't get a focus ring
+    if (PHONE.matches && byKeyboard) t.card.querySelector(open ? '.sheet-close' : '.card-toggle')?.focus({ preventScroll: true });
+  }
+  const closeSheets = () => TIERS.forEach(t => { if (t.card.classList.contains('open')) setCardOpen(t, false); });
+  // a tap on the dimmed sky closes the sheet (and doesn't also press what's under it)
+  document.addEventListener('click', e => {
+    if (!document.documentElement.classList.contains('sheet-open') || e.target.closest('.card.open')) return;
+    e.preventDefault(); e.stopPropagation(); closeSheets();
+  }, true);
+  addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sheet-open')) TIERS.forEach(t => { if (t.card.classList.contains('open')) setCardOpen(t, false, true); }); });
+  PHONE.addEventListener('change', () => document.documentElement.classList.toggle('sheet-open', PHONE.matches && TIERS.some(x => x.card.classList.contains('open'))));
+
   function buildTier(t) {
     t.chips.innerHTML = t.types.map(id => {
       const c = byId[id];
@@ -177,11 +200,25 @@
     }).join('');
     t.card.innerHTML = cardHTML(byId[t.cur]);
     t.card.addEventListener('click', e => {
-      const toggle = e.target.closest('.card-toggle');
+      if (e.target.closest('.sheet-close')) { setCardOpen(t, false, e.detail === 0); return; }
+      // phones: the whole closed preview is one big target, not just the small button
+      const toggle = e.target.closest('.card-toggle') || (PHONE.matches && !t.card.classList.contains('open') ? t.card : null);
       if (!toggle) return;
-      const open = t.card.classList.toggle('open');
-      toggle.setAttribute('aria-expanded', String(open));
-      if (!open) t.card.scrollTop = 0;
+      setCardOpen(t, !t.card.classList.contains('open'), e.detail === 0);
+    });
+    // swipe the sheet down (from its top) to close it
+    let swipe = null;
+    t.card.addEventListener('touchstart', e => { swipe = t.card.classList.contains('open') && t.card.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
+    t.card.addEventListener('touchmove', e => {
+      if (swipe === null) return;
+      const dy = e.touches[0].clientY - swipe;
+      if (dy > 0 && t.card.scrollTop <= 0) t.card.style.translate = `0 ${dy}px`;
+    }, { passive: true });
+    t.card.addEventListener('touchend', e => {
+      if (swipe === null) return;
+      const dy = e.changedTouches[0].clientY - swipe; swipe = null;
+      t.card.style.translate = '';
+      if (dy > 90 && t.card.scrollTop <= 0) setCardOpen(t, false);
     });
     t.chips.addEventListener('click', e => {
       const b = e.target.closest('.chip');

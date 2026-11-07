@@ -1043,3 +1043,49 @@ body.night-sky .sky-link{color:#f0efff;border-color:#b8c8ff66;background:#263560
   .sky-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .sky-head{align-items:flex-start}
 }
+
+/* ---------- Phones: card as a docked preview that opens into a bottom sheet ---------- */
+.sheet-handle, .sheet-close { display: none; }
+@media (max-width: 760px) {
+  /* heading + chips stay up top, the clouds keep the middle, the card waits at the bottom (thumb reach) */
+  .stick { padding: 124px 16px calc(14px + env(safe-area-inset-bottom)); }
+  .stick .col { height: 100%; max-height: 100%; gap: 10px; }
+  .stick .card { flex: none; margin-top: auto; max-height: none; }
+  .next-cue { margin: 0; text-align: center; }
+
+  /* closed: a compact preview; the whole card is the tap target */
+  .card:not(.open) { padding: 16px 18px 14px; cursor: pointer; }
+  .card:not(.open) .card-head h3 { font-size: 28px; }
+  .card:not(.open) .abbr { width: 40px; height: 40px; font-size: 14px; }
+  .card:not(.open) .cloud-tip { margin: 8px 0 10px; font-size: 15px; line-height: 1.35; }
+  .card:not(.open) .card-toggle { padding: 8px 13px; font-size: 12px; }
+
+  /* open: a bottom sheet over a dimmed sky */
+  html body .stick .card.open {
+    position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; margin: 0;
+    max-height: min(80svh, 680px); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+    padding: 30px 20px calc(24px + env(safe-area-inset-bottom));
+    border-radius: 28px 28px 0 0; border-bottom: 0;
+    box-shadow: 0 0 0 100vmax rgba(26, 41, 88, .38), 0 -12px 40px rgba(26, 41, 88, .18) !important;
+    animation: sheet-up .34s cubic-bezier(.2, .8, .2, 1);
+    transition: translate .2s ease;
+    /* frosted, so the sky behind never shows through the text */
+    -webkit-backdrop-filter: blur(26px) saturate(1.15); backdrop-filter: blur(26px) saturate(1.15);
+  }
+  @keyframes sheet-up { from { translate: 0 60%; opacity: .4; } to { translate: 0 0; opacity: 1; } }
+  .card.open .sheet-handle {
+    display: block; position: absolute; top: 10px; left: 50%; width: 40px; height: 5px; margin-left: -20px;
+    border-radius: 99px; background: currentColor; opacity: .22;
+  }
+  .card.open .sheet-close {
+    display: grid; place-items: center; position: sticky; z-index: 2; top: -18px; float: right;
+    width: 40px; height: 40px; margin: -16px -6px 0 12px; padding: 0;
+    font: 400 26px/1 var(--sans); color: inherit; cursor: pointer;
+    background: rgba(255, 255, 255, .7); border: 1.5px solid rgba(255, 255, 255, .9); border-radius: 50%;
+  }
+  .card.open .card-toggle { display: none; }
+  .card.open .cloud-tip { margin: 10px 0 16px; }
+  html.sheet-open, html.sheet-open body { overflow: hidden; }
+  body.night-sky .card.open .sheet-close { background: #a6b9f02e; border-color: #b8c8ff55; }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) { .card.open { animation: none; } }
