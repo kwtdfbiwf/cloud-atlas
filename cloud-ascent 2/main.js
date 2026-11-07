@@ -228,7 +228,7 @@
     });
     // where you're headed next, so it's clear there's more above
     const NEXT = { low: 'Mid-level clouds next', mid: 'High clouds next', high: 'The top of the weather next' };
-    t.chips.closest('.col').insertAdjacentHTML('beforeend', `<p class="next-cue">${NEXT[t.key]} <span aria-hidden="true">↑</span></p>`);
+    t.chips.closest('.col').insertAdjacentHTML('beforeend', `<p class="next-cue">${NEXT[t.key]}</p>`);
     t.chips.addEventListener('keydown', e => {
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
       const i = t.types.indexOf(t.cur);
