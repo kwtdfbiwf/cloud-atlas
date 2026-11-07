@@ -237,6 +237,8 @@
     return `<button data-id="${id}" type="button"><b>${c.abbr}</b>${c.name}</button>`;
   }).join('');
   try { const saved=JSON.parse(localStorage.getItem('cloud-atlas-spotted')||'[]'); if(Array.isArray(saved))saved.filter(id=>byId[id]).forEach(markSeen); } catch {}
+  // lets the field guide's "Your sky now" take you to a cloud's card
+  window.CloudAtlas = { visit(id) { const c = byId[id]; if (!c) return; const t = tierByKey[c.tier]; t.picked = true; select(t, c.id); jumpTo(t); } };
   roster.addEventListener('click', e => {
     const b = e.target.closest('button');
     if (!b) return;

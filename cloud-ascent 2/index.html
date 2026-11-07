@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=barrier-9" />
+  <link rel="stylesheet" href="styles.css?v=sky-11" />
   <link rel="preload" href="reference-clouds/reference-clouds.glb?v=draco-1" as="fetch" crossorigin="anonymous" />
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" crossorigin="anonymous" />
 
@@ -70,7 +70,8 @@
         <p class="lede">This is the tropopause. Above it, in the stratosphere, the air warms with height and clouds have almost nothing to grow from. Thunderstorm anvils flatten against this ceiling. Every cloud you just met lives below you now.</p>
         <p class="height-note">Typical cloud-base ranges overlap and vary by latitude and season. The altimeter shows your viewpoint, not each cloud’s base.</p>
         <div class="roster" id="roster" aria-label="The ten cloud types"></div>
-        <button class="btn" id="descend" type="button">Drift back down ↓</button>
+        <div class="top-actions"><button class="btn" type="button" data-open-sky>What’s in your sky today?</button>
+        <button class="btn" id="descend" type="button">Drift back down ↓</button></div>
       </div>
     </section>
 
@@ -142,6 +143,7 @@
         <p class="eyebrow">0 m · ground level</p>
         <h1>Put your head in the clouds</h1>
         <p class="lede">Come meet the shapes that make our weather.</p>
+        <button class="sky-link" type="button" data-open-sky>Or see what’s above you right now →</button>
         <div class="hint" aria-hidden="true">
           <span>Scroll <b>up</b> to rise</span>
         </div>
@@ -149,10 +151,10 @@
     </section>
   </main>
 
-  <script src="clouds.js?v=barrier-9"></script>
+  <script src="clouds.js?v=sky-11"></script>
   <script src="ground-rain.js"></script>
-  <script src="main.js?v=barrier-9"></script>
-  <script src="field-guide.js?v=barrier-9"></script>
-  <script type="module" src="scene3d.js?v=barrier-9"></script>
+  <script src="main.js?v=sky-11"></script>
+  <script src="field-guide.js?v=sky-11"></script>
+  <script type="module" src="scene3d.js?v=sky-11"></script>
 </body>
 </html>
