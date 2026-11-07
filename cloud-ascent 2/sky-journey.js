@@ -12,8 +12,9 @@ let request,groups=[],ready=false,last=performance.now(),snapshot=null;
 const clouds=Object.fromEntries(window.CLOUDS.map(c=>[c.id,c]));
 const heights={low:1200,mid:4500,high:9000},labels={low:'Close to home',mid:'The alto layer',high:'Made of ice'};
 const units=v=>v==null?'–':Math.round(v);
-function card(c,estimate){return `<div class="card-head"><span class="abbr">${c.abbr}</span><div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div></div><p class="cloud-tip">${c.tip||c.look}</p><p class="personal-estimate"><b>${estimate.level==='likely'?'Likely':'Possible'}</b> · ${esc(estimate.why)}${estimate.hidden?'. May be hidden above lower cloud.':''}</p><dl class="stats"><div><dt>Typical base</dt><dd>${c.base}</dd></div><div><dt>Made of</dt><dd>${c.made}</dd></div></dl><p class="body">${c.desc}</p><p class="body"><b>Weather:</b> ${c.weather}</p>`;}
+function card(c,estimate){return `<span class="sheet-handle" aria-hidden="true"></span><button type="button" class="sheet-close" aria-label="Close ${c.name.toLowerCase()} details">×</button><div class="card-head"><span class="abbr">${c.abbr}</span><div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div></div><p class="cloud-tip">${c.tip||c.look}</p><p class="personal-estimate"><b>${estimate.level==='likely'?'Likely':'Possible'}</b> · ${esc(estimate.why)}${estimate.hidden?'. May be hidden above lower cloud.':''}</p><button type="button" class="card-toggle" aria-expanded="false"><span class="more">Show more about ${c.name.toLowerCase()}</span><span class="less">Show less</span></button><dl class="stats"><div><dt>Typical base</dt><dd>${c.base}</dd></div><div><dt>Made of</dt><dd>${c.made}</dd></div></dl><p class="body">${c.desc}</p><p class="body"><b>Weather:</b> ${c.weather}</p>`;}
 function build(estimates){
+ document.documentElement.classList.remove('sheet-open');
  document.querySelectorAll('.personal-layer,.personal-end').forEach(e=>e.remove());
  groups=['low','mid','high'].flatMap(tier=>{
    const matches=estimates.filter(e=>clouds[e.id].tier===tier);if(!matches.length)return [];
@@ -21,7 +22,7 @@ function build(estimates){
    el.innerHTML=`<div class="personal-sticky"><div class="personal-panel"><p class="eyebrow">${tier==='mid'?'Middle':tier[0].toUpperCase()+tier.slice(1)} clouds · ${heights[tier]/1000} km viewpoint</p><h2>${labels[tier]}</h2><div class="chips" role="tablist" aria-label="${tier} clouds estimated here">${matches.map((e,i)=>`<button class="chip" type="button" role="tab" id="tab-${e.id}" aria-controls="panel-${tier}" aria-selected="${i===0}" tabindex="${i===0?0:-1}" data-id="${e.id}">${clouds[e.id].name}</button>`).join('')}</div><article class="card" id="panel-${tier}" role="tabpanel" aria-labelledby="tab-${matches[0].id}">${card(clouds[matches[0].id],matches[0])}</article></div></div>`;
    journey.prepend(el);
    const group={el,tier,alt:heights[tier],matches,id:matches[0].id,arrived:false};
-   const choose=id=>{group.id=id;el.querySelectorAll('.chip').forEach(b=>{b.setAttribute('aria-selected',String(+b.dataset.id===id));b.tabIndex=+b.dataset.id===id?0:-1;});const panel=el.querySelector('.card');panel.setAttribute('aria-labelledby','tab-'+id);panel.innerHTML=card(clouds[id],matches.find(e=>e.id===id));panel.scrollTop=0;};
+   const choose=id=>{group.id=id;el.querySelectorAll('.chip').forEach(b=>{b.setAttribute('aria-selected',String(+b.dataset.id===id));b.tabIndex=+b.dataset.id===id?0:-1;});const panel=el.querySelector('.card');panel.setAttribute('aria-labelledby','tab-'+id);setCardOpen(panel,false);panel.innerHTML=card(clouds[id],matches.find(e=>e.id===id));panel.scrollTop=0;};
    el.querySelectorAll('.chip').forEach((button,i)=>{
      button.onclick=()=>choose(+button.dataset.id);
      button.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?matches.length-1:(i+(e.key==='ArrowRight'?1:-1)+matches.length)%matches.length;choose(matches[next].id);el.querySelectorAll('.chip')[next].focus();};
@@ -60,6 +61,29 @@ async function load(time){
  }catch(error){if(error.name==='AbortError')return;status.textContent=error.message||'Could not read the weather. Please try again.';if(!ready)$('#personal-title').textContent='Your sky is taking a moment';}
  finally{if(!signal.aborted)$('#time-form button[type="submit"]').disabled=false;}
 }
+// Phones: each card is a small preview at the bottom that opens into a bottom sheet over a dimmed
+// sky (the same pattern as the atlas page); the page underneath stays put until it's closed.
+const PHONE=matchMedia('(max-width: 760px)');
+function setCardOpen(c,open,byKeyboard=false){
+ c.classList.toggle('open',open);c.querySelector('.card-toggle')?.setAttribute('aria-expanded',String(open));c.scrollTop=0;
+ document.documentElement.classList.toggle('sheet-open',PHONE.matches&&!!document.querySelector('.personal-panel .card.open'));
+ if(PHONE.matches&&byKeyboard)c.querySelector(open?'.sheet-close':'.card-toggle')?.focus({preventScroll:true});
+}
+const closeSheets=(byKeyboard=false)=>document.querySelectorAll('.personal-panel .card.open').forEach(c=>setCardOpen(c,false,byKeyboard));
+document.addEventListener('click',e=>{
+ const c=e.target.closest('.personal-panel .card');
+ if(document.documentElement.classList.contains('sheet-open')&&!e.target.closest('.card.open')){e.preventDefault();e.stopPropagation();closeSheets();return;}
+ if(!c)return;
+ if(e.target.closest('.sheet-close')){setCardOpen(c,false,e.detail===0);return;}
+ if(e.target.closest('.card-toggle')||(PHONE.matches&&!c.classList.contains('open')))setCardOpen(c,!c.classList.contains('open'),e.detail===0);
+},true);
+addEventListener('keydown',e=>{if(e.key==='Escape'&&document.documentElement.classList.contains('sheet-open'))closeSheets(true);});
+PHONE.addEventListener('change',()=>document.documentElement.classList.toggle('sheet-open',PHONE.matches&&!!document.querySelector('.personal-panel .card.open')));
+// swipe the sheet down (from its top) to close it
+let swipe=null;
+document.addEventListener('touchstart',e=>{const c=e.target.closest('.personal-panel .card.open');swipe=c&&c.scrollTop<=0?{c,y:e.touches[0].clientY}:null;},{passive:true});
+document.addEventListener('touchmove',e=>{if(!swipe)return;const dy=e.touches[0].clientY-swipe.y;if(dy>0&&swipe.c.scrollTop<=0)swipe.c.style.translate=`0 ${dy}px`;},{passive:true});
+document.addEventListener('touchend',e=>{if(!swipe)return;const {c,y}=swipe,dy=e.changedTouches[0].clientY-y;swipe=null;c.style.translate='';if(dy>90&&c.scrollTop<=0)setCardOpen(c,false);});
 $('#time-form').onsubmit=e=>{e.preventDefault();load($('#sky-time').value);};$('#sky-now').onclick=()=>load(null);
 function frame(now){
  const dt=Math.min(.05,(now-last)/1000);last=now;
