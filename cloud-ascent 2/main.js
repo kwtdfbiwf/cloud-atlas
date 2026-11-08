@@ -134,15 +134,9 @@
     return p < 15 ? 'Very low' : p < 35 ? 'Low' : p < 60 ? 'Moderate' : p < 80 ? 'High' : 'Very high';
   }
 
-  // Live water optics share the sky renderer and remain behind readable content.
-  function glassRaindrops(c) {
-    return ''; // Rain effects are temporarily disabled.
-  }
-
   // `open`: phones show only the name and tip until the card is expanded (see .card-toggle in styles.css)
   function cardHTML(c, open = false) {
     return `
-      ${glassRaindrops(c)}
       <span class="sheet-handle" aria-hidden="true"></span>
       <button type="button" class="sheet-close" aria-label="Close ${c.name.toLowerCase()} details">×</button>
       <div class="card-head">
@@ -160,13 +154,13 @@
         </div>
         <figcaption><span class="label">How to spot it</span>${c.spot}</figcaption>
       </figure>
-      <dl class="stats">
+      <dl class="stats facts-start">
         <div><dt>Typical base</dt><dd>${c.base}</dd></div>
         <div><dt>Made of</dt><dd>${c.made}</dd></div>
       </dl>
-      <div class="rainline"><span>Rain</span><div class="bar"><i style="width:${c.rain}%"></i></div><b>${rainWord(c.rain)}</b></div>
+      <div class="rainline"><span>Rain</span><div class="bar"><i style="width:${c.rain}%"></i></div><b>${rainWord(c.rain)}${c.rainNote ? `, ${c.rainNote}` : ''}</b></div>
       
-      <p class="body">${c.desc}</p>
+      <p class="body story-start"><span class="label">How it forms</span>${c.desc}</p>
       <p class="body"><span class="label">Weather</span>${c.weather}</p>
       <p class="body"><span class="label">Did you know?</span>${c.fact}</p>`;
   }
@@ -195,9 +189,12 @@
   function buildTier(t) {
     t.chips.innerHTML = t.types.map(id => {
       const c = byId[id];
-      return `<button class="chip" role="tab" data-id="${id}" aria-selected="${id === t.cur}" tabindex="${id===t.cur?0:-1}">
+      return `<button class="chip" role="tab" id="chip-${id}" aria-controls="card-${t.key}" data-id="${id}" aria-selected="${id === t.cur}" tabindex="${id===t.cur?0:-1}">
         ${c.rainFx ? DROP : ''}${c.name}${c.rainFx ? '<span class="sr-only"> (brings rain)</span>' : ''}</button>`;
     }).join('');
+    t.card.id = `card-${t.key}`;
+    t.card.setAttribute('role', 'tabpanel');
+    t.card.setAttribute('aria-labelledby', `chip-${t.cur}`);
     t.card.innerHTML = cardHTML(byId[t.cur]);
     // explain the raindrop on the chips of rain-bearing clouds
     if (t.types.some(id => byId[id].rainFx)) t.chips.insertAdjacentHTML('beforeend', `<span class="chip-key" aria-hidden="true">${DROP}Brings rain</span>`);
@@ -250,6 +247,7 @@
     t.card.classList.add('swap');
     setTimeout(() => {
       t.card.innerHTML = cardHTML(byId[id], t.card.classList.contains('open'));
+      t.card.setAttribute('aria-labelledby', `chip-${id}`);
       t.card.scrollTop = 0;
       t.card.classList.remove('swap');
     }, 200);

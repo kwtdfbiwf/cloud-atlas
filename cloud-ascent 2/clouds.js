@@ -5,7 +5,7 @@ window.CLOUDS = [
     tip: 'Flat bottom. Fluffy top. Probably cumulus.',
     latin: 'cumulus — “heap”',
     base: '0.6–2 km', made: 'Water droplets', rain: 10,
-    desc: 'Warm air rises in bubbles called thermals. Each one cools as it climbs until its moisture condenses into a separate heap.',
+    desc: 'Bubbles of warm air called thermals rise and cool until their moisture condenses into separate heaps.',
     weather: 'Usually fair; growing towers can signal showers.',
     spot: 'Late mornings on sunny days. Brilliant white where the sun hits, grey underneath, with edges sharp enough to trace.',
     fact: 'A small fair-weather cumulus can hold around 500 tonnes of water, spread through billions of tiny droplets.',
@@ -35,7 +35,7 @@ window.CLOUDS = [
     look: 'An even grey sheet with no shapes at all, like fog that’s lifted'
   },
   {
-    id: 3, name: 'Cumulonimbus', abbr: 'Cb', tier: 'low', rainFx: true, lightning: true,
+    id: 3, name: 'Cumulonimbus', abbr: 'Cb', tier: 'low', rainFx: true, lightning: true, rainNote: 'in bursts',
     tip: 'A towering top. An anvil. A storm brewing.',
     latin: 'cumulus + nimbus — “heaped rain cloud”',
     base: '0.3–2 km; tops 11–13 km', made: 'Droplets, hail & ice', rain: 95,
@@ -61,7 +61,7 @@ window.CLOUDS = [
     id: 6, name: 'Altostratus', abbr: 'As', tier: 'mid',
     tip: 'A grey veil. The sun on dimmer mode.',
     latin: 'altus + stratus — “high layer”',
-    base: '2–7 km', made: 'Droplets & ice crystals', rain: 40,
+    base: '2–7 km', made: 'Droplets & ice crystals', rain: 25,
     desc: 'A broad sheet of cloud spreads across the whole sky, often ahead of a warm front.',
     weather: 'Light rain or snow; thickening cloud may bring steady rain.',
     spot: 'The “watery sun”: a dim disc with no halo around it, and nothing on the ground casts a shadow.',
@@ -69,7 +69,7 @@ window.CLOUDS = [
     look: 'A smooth grey veil; the sun shows as a dim disc with no halo'
   },
   {
-    id: 4, name: 'Nimbostratus', abbr: 'Ns', tier: 'mid', rainFx: true,
+    id: 4, name: 'Nimbostratus', abbr: 'Ns', tier: 'mid', rainFx: true, rainNote: 'steady',
     tip: 'Dark blanket. Hidden sun. Rain for hours.',
     latin: 'nimbus + stratus — “rain layer”',
     base: '0.5–3 km; several km thick', made: 'Droplets, rain, snow & ice', rain: 95,
