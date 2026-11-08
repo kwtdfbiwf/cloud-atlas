@@ -158,7 +158,7 @@
           <span class="spot-tag">From the ground</span>
           ${c.scale ? `<div class="spot-scale" data-deg="${c.scale.deg}"><i></i><span>${c.scale.label}</span></div>` : ''}
         </div>
-        <figcaption><b>Look for:</b> ${c.look}</figcaption>
+        <figcaption><span class="label">How to spot it</span>${c.spot}</figcaption>
       </figure>
       <dl class="stats">
         <div><dt>Typical base</dt><dd>${c.base}</dd></div>
@@ -167,8 +167,8 @@
       <div class="rainline"><span>Rain</span><div class="bar"><i style="width:${c.rain}%"></i></div><b>${rainWord(c.rain)}</b></div>
       
       <p class="body">${c.desc}</p>
-      <p class="body"><b>Weather:</b> ${c.weather}</p>
-      <p class="body"><b>Did you know?</b> ${c.fact}</p>`;
+      <p class="body"><span class="label">Weather</span>${c.weather}</p>
+      <p class="body"><span class="label">Did you know?</span>${c.fact}</p>`;
   }
 
   // Phones: a closed card is a small preview docked at the bottom; opened, it becomes a bottom
@@ -196,9 +196,11 @@
     t.chips.innerHTML = t.types.map(id => {
       const c = byId[id];
       return `<button class="chip" role="tab" data-id="${id}" aria-selected="${id === t.cur}" tabindex="${id===t.cur?0:-1}">
-        ${c.rainFx ? DROP : ''}${c.name}</button>`;
+        ${c.rainFx ? DROP : ''}${c.name}${c.rainFx ? '<span class="sr-only"> (brings rain)</span>' : ''}</button>`;
     }).join('');
     t.card.innerHTML = cardHTML(byId[t.cur]);
+    // explain the raindrop on the chips of rain-bearing clouds
+    if (t.types.some(id => byId[id].rainFx)) t.chips.insertAdjacentHTML('beforeend', `<span class="chip-key" aria-hidden="true">${DROP}Brings rain</span>`);
     t.card.addEventListener('click', e => {
       if (e.target.closest('.sheet-close')) { setCardOpen(t, false, e.detail === 0); return; }
       // phones: the whole closed preview is one big target, not just the small button
@@ -227,7 +229,7 @@
       select(t, +b.dataset.id);
     });
     // where you're headed next, so it's clear there's more above
-    const NEXT = { low: 'Mid-level clouds next', mid: 'High clouds next', high: 'The top of the weather next' };
+    const NEXT = { low: 'Middle clouds next', mid: 'High clouds next', high: 'The top of the weather next' };
     t.chips.closest('.col').insertAdjacentHTML('beforeend', `<p class="next-cue">${NEXT[t.key]}</p>`);
     t.chips.addEventListener('keydown', e => {
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
@@ -274,6 +276,13 @@
     return `<button data-id="${id}" type="button"><b>${c.abbr}</b>${c.name}</button>`;
   }).join('');
   try { const saved=JSON.parse(localStorage.getItem('cloud-atlas-spotted')||'[]'); if(Array.isArray(saved))saved.filter(id=>byId[id]).forEach(markSeen); } catch {}
+  // "Start over" clears the spotted tally (it's kept between visits)
+  $('#reset-spotted')?.addEventListener('click', () => {
+    seen.clear();
+    try { localStorage.setItem('cloud-atlas-spotted', '[]'); } catch {}
+    $$('.chip.seen, #roster .seen').forEach(b => b.classList.toggle('seen', false));
+    const n = $('#seenN'); if (n) n.textContent = '0';
+  });
   // lets the field guide's "Your sky now" take you to a cloud's card
   window.CloudAtlas = { visit(id) { const c = byId[id]; if (!c) return; const t = tierByKey[c.tier]; t.picked = true; select(t, c.id); jumpTo(t); } };
   roster.addEventListener('click', e => {
@@ -360,8 +369,9 @@
     $$('[data-alt-label]').forEach(el => {
       const r = el.closest('section').getBoundingClientRect();
       const s = M.maxScroll - (r.top + scrollY + r.height / 2 - M.vh / 2);
-      const m = Math.round(altitudeAt(s) / 100) * 100;
-      el.textContent = `≈ ${m.toLocaleString()} m`;
+      // the top stage is where the climb ends, so it shows the same height as the altimeter there
+      const m = el.closest("#top") ? ALT.top : Math.round(altitudeAt(s) / 100) * 100;
+      el.textContent = `≈ ${(m / 1000).toFixed(1)} km`;
     });
 
     // the sky canvases are 100lvh tall (see styles.css), so draw them at that height
@@ -929,7 +939,7 @@ void main(){
     if (audio.ctx.state === 'suspended') audio.ctx.resume();
     audio.master.gain.setTargetAtTime(soundOn ? 0.9 : 0, audio.ctx.currentTime, 0.3);
     soundBtn.setAttribute('aria-pressed', soundOn);
-    $('span', soundBtn).textContent = soundOn ? 'Sound on' : 'Sound off';
+    $('span', soundBtn).textContent = soundOn ? 'Sound: on' : 'Sound: off';
   });
 
   // ---------------------------------------------------------------- HUD

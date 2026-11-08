@@ -1089,3 +1089,45 @@ body.night-sky .sky-link{color:#f0efff;border-color:#b8c8ff66;background:#263560
   body.night-sky .card.open .sheet-close { background: #a6b9f02e; border-color: #b8c8ff55; }
 }
 @media (max-width: 760px) and (prefers-reduced-motion: reduce) { .card.open { animation: none; } }
+
+/* ---------- Consistency pass: readable text on the sky, one label style, aligned layout ---------- */
+/* light text over the pale lower sky needs a soft shadow and full-strength colour to stay readable */
+html body :is(.tier-head, .inter-inner, .stage-inner, .next-cue, .chip-key) { text-shadow: 0 1px 2px rgba(28, 34, 92, .42), 0 0 24px rgba(28, 34, 92, .3); }
+html body :is(.inter-inner p:not(.eyebrow), .stage .lede, .height-note, .next-cue, .eyebrow, .roster-key, .chip-key, .stage .hint) { color: #fffaf3; }
+html body .stage-inner :is(button, .btn), html body .roster button { text-shadow: none; }
+html body .ground .stage-inner { text-shadow: 0 1px 2px rgba(28, 34, 92, .42), 0 0 24px rgba(28, 34, 92, .3); }
+
+/* desktop: the interlude text keeps clear of the altitude panel */
+@media (min-width: 761px) { html body .inter-inner { margin-right: max(214px, 14vw); max-width: 460px; } }
+
+/* small text sizes, raised to stay legible */
+html body .eyebrow { font-size: 12px; }
+html body .next-cue { font-size: 12.5px; font-weight: 800; opacity: 1; }
+html body .card :is(.stats dt, .rainline > span, .label) {
+  font: 800 11.5px/1.3 var(--sans); letter-spacing: .12em; text-transform: uppercase; color: #5a6f8c;
+}
+/* one label style in the card: a small caps line above its text */
+.card .label { display: block; margin-bottom: 3px; }
+html body .spotter figcaption { color: var(--ink-soft); }
+
+/* header buttons share one text style */
+html body .sound { text-transform: none; letter-spacing: normal; }
+
+/* ground: the scroll instruction is the main call to action, the live-sky link is secondary */
+html body .ground .hint { display: block; margin-top: 26px; font: 700 18px/1.3 var(--sans); }
+html body .ground .hint b { font-weight: 900; }
+html body .ground .sky-link { margin-top: 14px; }
+
+/* top: everything left-aligned, like the text above it */
+html body .top-actions { justify-content: flex-start; }
+.roster-key { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin: -18px 0 24px; font: 600 13px/1.4 var(--sans); }
+.key-swatch { width: 14px; height: 14px; border-radius: 4px; background: #deeedc; border: 1px solid #fffaf0; }
+.link-btn { padding: 0; border: 0; background: none; color: inherit; font: 800 13px var(--sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+body.night-sky .key-swatch { background: rgba(6, 16, 38, .5); border-color: #b8c8ff66; }
+
+/* the raindrop on a chip, explained */
+.chip-key { display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; font: 700 12.5px/1 var(--sans); }
+.card .body:has(> .label) { margin-top: 14px; }
+.spotter figcaption .label { margin-top: 4px; }
+.chip-key .drop { color: #cfe6f2; }
+html body.night-sky .card :is(.stats dt, .rainline > span, .label) { color: #b4c2ea; }
