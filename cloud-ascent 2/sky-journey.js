@@ -29,7 +29,7 @@ function build(estimates){
    });return [group];
  });
  const end=document.createElement('section');end.className='personal-end';end.innerHTML=`<div><p class="eyebrow">Your sky, explored</p><h2>${estimates.length?'That’s your sky.':'Room to breathe.'}</h2><p>${estimates.length?`${estimates.length} cloud ${estimates.length===1?'type':'types'} estimated over ${esc(name)} for this time.`:'No cloud types are estimated for this time. Enjoy a clear climb, or try another hour.'}</p><p class="personal-source">Cloud types are estimates from weather-model data, not direct observations. Higher clouds may be hidden from the ground. <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather: Open-Meteo</a>.</p><a class="btn" href="index.html">Explore all ten clouds →</a><button class="btn" type="button" id="return-weather">Change the time ↓</button></div>`;journey.prepend(end);
- $('#return-weather').onclick=()=>scrollTo({top:document.documentElement.scrollHeight-innerHeight,behavior:motion.matches?'instant':'smooth'});
+ $('#return-weather').onclick=()=>scrollTo({top:groundStart(),behavior:motion.matches?'instant':'smooth'});
 }
 async function load(time){
  request?.abort();request=new AbortController();const signal=request.signal;
@@ -57,7 +57,7 @@ async function load(time){
   $('#sky-time').value=selected.slice(0,13)+':00';$('#time-form').hidden=false;
   const today=w.current.time.slice(0,10),date=new Date(today+'T12:00');date.setDate(date.getDate()-7);$('#sky-time').min=date.toISOString().slice(0,10)+'T00:00';date.setDate(date.getDate()+14);$('#sky-time').max=date.toISOString().slice(0,10)+'T23:00';
   if(time)params.set('time',time);else params.delete('time');history.replaceState(null,'',location.pathname+'?'+params);
-  await document.fonts.ready;if(signal.aborted)return;scrollTo({top:document.documentElement.scrollHeight-innerHeight,behavior:'instant'});
+  await document.fonts.ready;if(signal.aborted)return;scrollTo({top:groundStart(),behavior:'instant'});
  }catch(error){if(error.name==='AbortError')return;status.textContent=error.message||'Could not read the weather. Please try again.';if(!ready)$('#personal-title').textContent='Your sky is taking a moment';}
  finally{if(!signal.aborted)$('#time-form button[type="submit"]').disabled=false;}
 }
@@ -84,11 +84,21 @@ let swipe=null;
 document.addEventListener('touchstart',e=>{const c=e.target.closest('.personal-panel .card.open');swipe=c&&c.scrollTop<=0?{c,y:e.touches[0].clientY}:null;},{passive:true});
 document.addEventListener('touchmove',e=>{if(!swipe)return;const dy=e.touches[0].clientY-swipe.y;if(dy>0&&swipe.c.scrollTop<=0)swipe.c.style.translate=`0 ${dy}px`;},{passive:true});
 document.addEventListener('touchend',e=>{if(!swipe)return;const {c,y}=swipe,dy=e.changedTouches[0].clientY-y;swipe=null;c.style.translate='';if(dy>90&&c.scrollTop<=0)setCardOpen(c,false);});
+// Where the climb starts: the bottom of the page, unless the weather block is taller than the
+// screen (phones) - then its top, just below the fixed header, so the title is never hidden.
+function groundStart(){
+ const max=document.documentElement.scrollHeight-innerHeight,intro=$('.personal-intro');
+ const below=$('.personal-header').getBoundingClientRect().bottom+16;
+ const top=intro.getBoundingClientRect().top+scrollY;
+ groundY=top-max>=below?max:Math.max(0,Math.min(max,top-below));
+ return groundY;
+}
+let groundY=null;
 $('#time-form').onsubmit=e=>{e.preventDefault();load($('#sky-time').value);};$('#sky-now').onclick=()=>load(null);
 function frame(now){
  const dt=Math.min(.05,(now-last)/1000);last=now;
  const max=Math.max(1,document.documentElement.scrollHeight-innerHeight),view=scrollY+innerHeight/2;
- const anchors=[{y:max,alt:0},...groups.map(g=>({y:g.el.offsetTop+g.el.offsetHeight/2-innerHeight/2,alt:g.alt})),{y:0,alt:12000}].sort((a,b)=>b.y-a.y);
+ const anchors=[{y:groundY??max,alt:0},...groups.map(g=>({y:g.el.offsetTop+g.el.offsetHeight/2-innerHeight/2,alt:g.alt})),{y:0,alt:12000}].sort((a,b)=>b.y-a.y);
  let alt=0;for(let i=1;i<anchors.length;i++){if(scrollY>=anchors[i].y){const a=anchors[i-1],b=anchors[i],p=Math.max(0,Math.min(1,(a.y-scrollY)/Math.max(1,a.y-b.y)));alt=a.alt+(b.alt-a.alt)*p;break;}}
  let active=null,best=Infinity;for(const g of groups){const distance=Math.abs(view-(g.el.offsetTop+g.el.offsetHeight/2));if(distance<best){best=distance;active=g;}}
  const visible=active&&best<innerHeight*1.15;
@@ -98,6 +108,6 @@ function frame(now){
  else if(window.Scene3D?.unavailable){$('#sky-status').textContent='The illustrated sky could not load. Please reload.';}
  requestAnimationFrame(frame);
 }
-addEventListener('resize',()=>window.Scene3D?.resize?.(innerWidth,innerHeight));
-history.scrollRestoration='manual';document.body.classList.remove('loading');scrollTo(0,document.documentElement.scrollHeight-innerHeight);requestAnimationFrame(frame);load(params.get('time'));
+addEventListener('resize',()=>{window.Scene3D?.resize?.(innerWidth,innerHeight);groundStart();});
+history.scrollRestoration='manual';document.body.classList.remove('loading');scrollTo(0,groundStart());requestAnimationFrame(frame);load(params.get('time'));
 })();

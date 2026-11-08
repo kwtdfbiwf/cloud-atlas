@@ -8,3 +8,6 @@
 @media(max-width:760px){.personal-panel .card:not(.open) .personal-estimate{margin:0 0 10px;font-size:13px}}
 /* while a card sheet is open it (and its dimmed sky) sits above the header and altitude badge */
 html.sheet-open #personal-journey{z-index:20}
+/* a soft frosted band behind the fixed header, so page text never collides with it */
+.personal-header::before{content:'';position:fixed;left:0;right:0;top:0;height:84px;z-index:-1;pointer-events:none;background:rgba(36,48,104,.22);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);-webkit-mask-image:linear-gradient(#000 62%,transparent);mask-image:linear-gradient(#000 62%,transparent)}
+@media(max-width:700px){.personal-header::before{height:72px}}
