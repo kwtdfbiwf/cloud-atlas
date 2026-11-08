@@ -1131,3 +1131,11 @@ body.night-sky .key-swatch { background: rgba(6, 16, 38, .5); border-color: #b8c
 .spotter figcaption .label { margin-top: 4px; }
 .chip-key .drop { color: #cfe6f2; }
 html body.night-sky .card :is(.stats dt, .rainline > span, .label) { color: #b4c2ea; }
+
+/* header controls, now without "Field tools": sound and night sky close the gap */
+@media (min-width: 761px) { html body .sky-theme { right: 32px; } html body .sound { right: 154px; } }
+@media (max-width: 760px) { html body .sound { right: 64px; } }
+/* "Open the sky over …" shortcut to the last place you chose */
+#field-dialog .sky-resume { display: inline-block; margin-top: 14px; padding: 11px 18px; border-radius: 999px; border: 1.5px solid #fffdf6; background: rgba(255, 255, 255, .55); color: #2b3c62; font: 800 14px var(--sans); cursor: pointer; }
+#field-dialog .sky-resume:hover { background: rgba(255, 255, 255, .75); }
+body.night-sky #field-dialog .sky-resume { color: #f0efff; background: #26356088; border-color: #b8c8ff66; }
