@@ -174,8 +174,8 @@
     const anyOpen = PHONE.matches && TIERS.some(x => x.card.classList.contains('open'));
     document.documentElement.classList.toggle('sheet-open', anyOpen);
     t.card.scrollTop = 0;
-    // keyboard users land on the close button (and back on the toggle); taps don't get a focus ring
-    if (PHONE.matches && byKeyboard) t.card.querySelector(open ? '.sheet-close' : '.card-toggle')?.focus({ preventScroll: true });
+    if(PHONE.matches&&open)window.MobileSheetFocus.activate(t.card);
+    else if(!anyOpen)window.MobileSheetFocus.deactivate();
   }
   const closeSheets = () => TIERS.forEach(t => { if (t.card.classList.contains('open')) setCardOpen(t, false); });
   // a tap on the dimmed sky closes the sheet (and doesn't also press what's under it)
@@ -184,7 +184,7 @@
     e.preventDefault(); e.stopPropagation(); closeSheets();
   }, true);
   addEventListener('keydown', e => { if (e.key === 'Escape' && document.documentElement.classList.contains('sheet-open')) TIERS.forEach(t => { if (t.card.classList.contains('open')) setCardOpen(t, false, true); }); });
-  PHONE.addEventListener('change', () => document.documentElement.classList.toggle('sheet-open', PHONE.matches && TIERS.some(x => x.card.classList.contains('open'))));
+  PHONE.addEventListener('change',()=>{const card=TIERS.find(t=>t.card.classList.contains('open'))?.card;document.documentElement.classList.toggle('sheet-open',PHONE.matches&&!!card);if(PHONE.matches&&card)window.MobileSheetFocus.activate(card);else window.MobileSheetFocus.deactivate(false);});
 
   function buildTier(t) {
     t.chips.innerHTML = t.types.map(id => {

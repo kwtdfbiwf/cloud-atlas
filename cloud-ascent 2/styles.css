@@ -1196,3 +1196,26 @@ html body .ground .hero-actions .sky-link { margin:0; min-height:44px; padding:1
  html body .ground .hero-alternative { gap:10px; max-width:100%; }
  html body .ground .hero-actions .sky-link { padding:10px 15px; }
 }
+
+/* Readable glass: retain translucency without letting passing clouds wash out the text. */
+html body :is(#journey,#personal-journey) .card, html body #field-dialog {
+ --ink:#17243d; --ink-soft:#34445e; --ink-faint:#455873;
+ background:rgba(249,247,255,.91);color:var(--ink);
+}
+html body :is(#journey,#personal-journey) .card :is(.latin,.body,.personal-estimate,figcaption){color:var(--ink-soft);opacity:1}
+html body :is(#journey,#personal-journey) .card :is(.label,.stats dt,.rainline>span){color:#455873;opacity:1}
+html body .chip{background:rgba(249,247,255,.93);color:#263654;border-color:rgba(255,255,255,.9)}
+html body .chip[aria-selected="true"]{background:#263654;color:#fff;border-color:#fff}
+html body .ground :is(.lede,.hint){color:#15213b;text-shadow:none}
+html body .ground .hero-actions .sky-link{background:#263654;color:#fff;border-color:#d8e1ff;text-shadow:none}
+html body .ground .hero-actions .sky-link:hover{background:#17243d}
+html body.night-sky :is(#journey,#personal-journey) .card,html body.night-sky #field-dialog{
+ --ink:#f8f7ff;--ink-soft:#dce4f5;--ink-faint:#c8d5ed;
+ background:rgba(24,34,59,.94);color:var(--ink);
+}
+html body.night-sky :is(#journey,#personal-journey) .card :is(.label,.stats dt,.rainline>span){color:#c8d5ed}
+html body.night-sky .ground :is(.lede,.hint){color:#f8f7ff}
+html body.night-sky .chip{background:#263654;color:#e6edff;border-color:#a5b6d5}
+html body.night-sky .chip[aria-selected="true"]{background:#f2edff;color:#17243d;border-color:#fff}
+/* A visible focus ring remains distinct in both sky themes. */
+html body :is(button,a,input,summary):focus-visible{outline:3px solid #ebbd56;outline-offset:4px}

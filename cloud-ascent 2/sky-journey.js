@@ -14,6 +14,7 @@ const heights={low:1200,mid:4500,high:9000},labels={low:'Close to home',mid:'The
 const units=v=>v==null?'–':Math.round(v);
 function card(c,estimate){return `<span class="sheet-handle" aria-hidden="true"></span><button type="button" class="sheet-close" aria-label="Close ${c.name.toLowerCase()} details">×</button><div class="card-head"><span class="abbr">${c.abbr}</span><div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div></div><p class="cloud-tip">${c.tip||c.look}</p><p class="personal-estimate"><b>${estimate.level==='likely'?'Likely':'Possible'}</b> · ${esc(estimate.why)}${estimate.hidden?'. May be hidden above lower cloud.':''}</p><button type="button" class="card-toggle" aria-expanded="false"><span class="more">Show more about ${c.name.toLowerCase()}</span><span class="less">Show less</span></button><dl class="stats"><div><dt>Typical base</dt><dd>${c.base}</dd></div><div><dt>Made of</dt><dd>${c.made}</dd></div></dl><p class="body"><span class="label">How it forms</span>${c.desc}</p><p class="body"><span class="label">How to spot it</span>${c.spot}</p><p class="body"><span class="label">Weather</span>${c.weather}</p>`;}
 function build(estimates){
+ window.MobileSheetFocus.deactivate(false);
  document.documentElement.classList.remove('sheet-open');
  document.querySelectorAll('.personal-layer,.personal-end').forEach(e=>e.remove());
  groups=['low','mid','high'].flatMap(tier=>{
@@ -53,7 +54,7 @@ async function load(time){
   const when=new Date(selected).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
   $('#place-label').textContent=name+' · '+when;
   status.textContent=`${region?region+' · ':''}${when} · ${w.timezone.replaceAll('_',' ')}${time?' · selected hour':' · latest model update'}`;
-  $('#weather-summary').innerHTML=`<p class="personal-condition">${esc(window.SkyWeather.WEATHER[estimate.code]||'Weather')} · ${units(at('temperature_2m'))}°C</p><dl class="personal-weather">${[['Feels like',units(at('apparent_temperature'))+'°C'],['Wind',units(at('wind_speed_10m'))+' km/h '+['N','NE','E','SE','S','SW','W','NW'][Math.round((at('wind_direction_10m')||0)/45)%8]],['Humidity',units(at('relative_humidity_2m'))+'%'],['Rain chance',units(h.precipitation_probability[i])+'%'],['Cloud cover',units(at('cloud_cover'))+'%'],['Visibility',h.visibility[i]==null?'–':(h.visibility[i]/1000).toFixed(1)+' km'],['Freezing level',h.freezing_level_height[i]==null?'–':(h.freezing_level_height[i]/1000).toFixed(1)+' km']].map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><p class="personal-source">${matches.length?matches.map(e=>esc(clouds[e.id].name)).join(' · '):'No clouds estimated at this time.'}</p><p class="personal-source">An illustrated journey through estimated clouds, not a live camera view.</p>`;
+  $('#weather-summary').innerHTML=`<p class="personal-condition">${esc(window.SkyWeather.WEATHER[estimate.code]||'Weather')} · ${units(at('temperature_2m'))}°C</p><details class="personal-weather-details" ${PHONE.matches?'':'open'}><summary>Weather details</summary><dl class="personal-weather">${[['Feels like',units(at('apparent_temperature'))+'°C'],['Wind',units(at('wind_speed_10m'))+' km/h '+['N','NE','E','SE','S','SW','W','NW'][Math.round((at('wind_direction_10m')||0)/45)%8]],['Humidity',units(at('relative_humidity_2m'))+'%'],['Rain chance',units(h.precipitation_probability[i])+'%'],['Cloud cover',units(at('cloud_cover'))+'%'],['Visibility',h.visibility[i]==null?'–':(h.visibility[i]/1000).toFixed(1)+' km'],['Freezing level',h.freezing_level_height[i]==null?'–':(h.freezing_level_height[i]/1000).toFixed(1)+' km']].map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><p class="personal-source">${matches.length?matches.map(e=>esc(clouds[e.id].name)).join(' · '):'No clouds estimated at this time.'}</p><p class="personal-source">An illustrated journey through estimated clouds, not a live camera view.</p></details>`;
   $('#sky-time').value=selected.slice(0,13)+':00';$('#time-form').hidden=false;
   const today=w.current.time.slice(0,10),date=new Date(today+'T12:00');date.setDate(date.getDate()-7);$('#sky-time').min=date.toISOString().slice(0,10)+'T00:00';date.setDate(date.getDate()+14);$('#sky-time').max=date.toISOString().slice(0,10)+'T23:00';
   if(time)params.set('time',time);else params.delete('time');history.replaceState(null,'',location.pathname+'?'+params);
@@ -67,7 +68,7 @@ const PHONE=matchMedia('(max-width: 760px)');
 function setCardOpen(c,open,byKeyboard=false){
  c.classList.toggle('open',open);c.querySelector('.card-toggle')?.setAttribute('aria-expanded',String(open));c.scrollTop=0;
  document.documentElement.classList.toggle('sheet-open',PHONE.matches&&!!document.querySelector('.personal-panel .card.open'));
- if(PHONE.matches&&byKeyboard)c.querySelector(open?'.sheet-close':'.card-toggle')?.focus({preventScroll:true});
+ if(PHONE.matches&&open)window.MobileSheetFocus.activate(c);else if(!document.querySelector('.personal-panel .card.open'))window.MobileSheetFocus.deactivate();
 }
 const closeSheets=(byKeyboard=false)=>document.querySelectorAll('.personal-panel .card.open').forEach(c=>setCardOpen(c,false,byKeyboard));
 document.addEventListener('click',e=>{
@@ -78,7 +79,7 @@ document.addEventListener('click',e=>{
  if(e.target.closest('.card-toggle')||(PHONE.matches&&!c.classList.contains('open')))setCardOpen(c,!c.classList.contains('open'),e.detail===0);
 },true);
 addEventListener('keydown',e=>{if(e.key==='Escape'&&document.documentElement.classList.contains('sheet-open'))closeSheets(true);});
-PHONE.addEventListener('change',()=>document.documentElement.classList.toggle('sheet-open',PHONE.matches&&!!document.querySelector('.personal-panel .card.open')));
+PHONE.addEventListener('change',()=>{const card=document.querySelector('.personal-panel .card.open');document.documentElement.classList.toggle('sheet-open',PHONE.matches&&!!card);if(PHONE.matches&&card)window.MobileSheetFocus.activate(card);else window.MobileSheetFocus.deactivate(false);document.querySelector('.personal-weather-details')?.toggleAttribute('open',!PHONE.matches);});
 // swipe the sheet down (from its top) to close it
 let swipe=null;
 document.addEventListener('touchstart',e=>{const c=e.target.closest('.personal-panel .card.open');swipe=c&&c.scrollTop<=0?{c,y:e.touches[0].clientY}:null;},{passive:true});

@@ -11,3 +11,20 @@ html.sheet-open #personal-journey{z-index:20}
 /* a soft frosted band behind the fixed header, so page text never collides with it */
 .personal-header::before{content:'';position:fixed;left:0;right:0;top:0;height:84px;z-index:-1;pointer-events:none;background:rgba(36,48,104,.22);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);-webkit-mask-image:linear-gradient(#000 62%,transparent);mask-image:linear-gradient(#000 62%,transparent)}
 @media(max-width:700px){.personal-header::before{height:72px}}
+/* Keep the mobile start, time controls and ascent cue together on the first screen. */
+.personal-weather-details{margin:16px 0 0}
+.personal-weather-details summary{cursor:pointer;font-weight:800;font-size:14px;min-height:36px;display:list-item;list-style-position:inside;padding:7px 0}
+.personal-weather-details[open] summary{margin-bottom:8px}
+@media(max-width:760px){
+ .personal-ground{padding-top:90px;padding-bottom:80px;min-height:100svh}
+ .personal-intro h1{font-size:clamp(30px,8.5vw,40px);margin:8px 0 12px}
+ .personal-intro #weather-status{font-size:12px;line-height:1.5}
+ .personal-condition{font-size:21px;margin:18px 0 8px}
+ .personal-weather-details{margin-top:8px}
+ #time-form{margin-top:18px}
+ .personal-hint{margin-top:20px}
+}
+/* The summary is stationary; a calm glass surface gives its small text stable contrast. */
+.personal-intro{background:rgba(21,31,59,.89);border:1px solid #ffffff66;border-radius:28px;padding:28px;color:#f9f7ff}
+.personal-intro :is(#weather-status,.personal-source,.personal-weather dt){opacity:1;color:#dce4f5}
+@media(max-width:760px){.personal-intro{padding:20px;border-radius:24px}.personal-ground{padding-inline:16px}#time-form input{width:100%;max-width:100%}}
