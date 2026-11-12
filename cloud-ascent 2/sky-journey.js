@@ -12,7 +12,7 @@ let request,groups=[],ready=false,last=performance.now(),snapshot=null;
 const clouds=Object.fromEntries(window.CLOUDS.map(c=>[c.id,c]));
 const heights={low:1200,mid:4500,high:9000},labels={low:'Close to home',mid:'The alto layer',high:'Made of ice'};
 const units=v=>v==null?'–':Math.round(v);
-function card(c,estimate){return `<span class="sheet-handle" aria-hidden="true"></span><button type="button" class="sheet-close" aria-label="Close ${c.name.toLowerCase()} details">×</button><div class="card-head"><span class="abbr">${c.abbr}</span><div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div></div><p class="cloud-tip">${c.tip||c.look}</p><p class="personal-estimate"><b>${estimate.level==='likely'?'Likely':'Possible'}</b> · ${esc(estimate.why)}${estimate.hidden?'. May be hidden above lower cloud.':''}</p><button type="button" class="card-toggle" aria-expanded="false"><span class="more">Show more about ${c.name.toLowerCase()}</span><span class="less">Show less</span></button><dl class="stats"><div><dt>Typical base</dt><dd>${c.base}</dd></div><div><dt>Made of</dt><dd>${c.made}</dd></div></dl><p class="body"><span class="label">How it forms</span>${c.desc}</p><p class="body"><span class="label">How to spot it</span>${c.spot}</p><p class="body"><span class="label">Weather</span>${c.weather}</p>`;}
+function card(c,estimate){return `<span class="sheet-handle" aria-hidden="true"></span><button type="button" class="sheet-close" aria-label="Close ${c.name.toLowerCase()} details">×</button><div class="card-head"><span class="abbr">${c.abbr}</span><div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div></div><p class="cloud-tip">${c.tip||c.look}</p><p class="personal-estimate"><b>${estimate.level==='likely'?'Likely':'Possible'}</b> · ${esc(estimate.why)}${estimate.hidden?'. May be hidden above lower cloud.':''}</p><button type="button" class="card-toggle" aria-expanded="false"><span class="more">Show more about ${c.name.toLowerCase()}</span><span class="less">Show less</span></button><dl class="stats"><div><dt>Typical base</dt><dd>${c.base}</dd></div><div><dt>Made of</dt><dd>${c.made}</dd></div></dl><p class="body card-extra"><span class="label">How it forms</span>${c.desc}</p><p class="body"><span class="label">Weather</span>${c.weather}</p><button class="cloud-read-more" type="button" data-cloud-details="${c.id}">More about ${c.name.toLowerCase()} →</button>`;}
 function build(estimates){
  window.MobileSheetFocus.deactivate(false);
  document.documentElement.classList.remove('sheet-open');
@@ -30,6 +30,8 @@ function build(estimates){
    });return [group];
  });
  const end=document.createElement('section');end.className='personal-end';end.innerHTML=`<div><p class="eyebrow">Your sky, explored</p><h2>${estimates.length?'That’s your sky.':'Room to breathe.'}</h2><p>${estimates.length?`${estimates.length} cloud ${estimates.length===1?'type':'types'} estimated over ${esc(name)} for this time.`:'No cloud types are estimated for this time. Enjoy a clear climb, or try another hour.'}</p><p class="personal-source">Cloud types are estimates from weather-model data, not direct observations. Higher clouds may be hidden from the ground. <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather: Open-Meteo</a>.</p><a class="btn" href="index.html">Explore all ten clouds →</a><button class="btn" type="button" id="return-weather">Change the time ↓</button></div>`;journey.prepend(end);
+ const nav=$('#personal-nav');nav.innerHTML=[...groups].reverse().map(g=>`<button type="button" data-level="${g.tier}" aria-label="Jump to ${g.tier==='mid'?'middle':g.tier} clouds">${g.tier==='mid'?'Middle':g.tier[0].toUpperCase()+g.tier.slice(1)}</button>`).join('')+'<button type="button" data-level="ground">Weather</button>';
+ nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{const group=groups.find(g=>g.tier===b.dataset.level);scrollTo({top:group?group.el.offsetTop+group.el.offsetHeight/2-innerHeight/2:groundStart(),behavior:motion.matches?'instant':'smooth'});});
  $('#return-weather').onclick=()=>scrollTo({top:groundStart(),behavior:motion.matches?'instant':'smooth'});
 }
 async function load(time){
@@ -52,10 +54,10 @@ async function load(time){
   build(matches);ready=true;
   document.body.classList.toggle('night-sky',!at('is_day'));document.body.dataset.skyTheme=at('is_day')?'day':'night';
   const when=new Date(selected).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-  $('#place-label').textContent=name+' · '+when;
-  status.textContent=`${region?region+' · ':''}${when} · ${w.timezone.replaceAll('_',' ')}${time?' · selected hour':' · latest model update'}`;
+  $('#place-label').replaceChildren();const placeName=document.createElement('strong'),placeTime=document.createElement('span');placeName.textContent=name;placeTime.textContent=when;$('#place-label').append(placeName,placeTime);
+  status.textContent=`${region?region+' · ':''}${when} · ${w.timezone.replaceAll('_',' ')}${time?' · hourly forecast for '+target.slice(11,16):' · latest reading'}`;
   $('#weather-summary').innerHTML=`<p class="personal-condition">${esc(window.SkyWeather.WEATHER[estimate.code]||'Weather')} · ${units(at('temperature_2m'))}°C</p><details class="personal-weather-details" ${PHONE.matches?'':'open'}><summary>Weather details</summary><dl class="personal-weather">${[['Feels like',units(at('apparent_temperature'))+'°C'],['Wind',units(at('wind_speed_10m'))+' km/h '+['N','NE','E','SE','S','SW','W','NW'][Math.round((at('wind_direction_10m')||0)/45)%8]],['Humidity',units(at('relative_humidity_2m'))+'%'],['Rain chance',units(h.precipitation_probability[i])+'%'],['Cloud cover',units(at('cloud_cover'))+'%'],['Visibility',h.visibility[i]==null?'–':(h.visibility[i]/1000).toFixed(1)+' km'],['Freezing level',h.freezing_level_height[i]==null?'–':(h.freezing_level_height[i]/1000).toFixed(1)+' km']].map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><p class="personal-source">${matches.length?matches.map(e=>esc(clouds[e.id].name)).join(' · '):'No clouds estimated at this time.'}</p><p class="personal-source">An illustrated journey through estimated clouds, not a live camera view.</p></details>`;
-  $('#sky-time').value=selected.slice(0,13)+':00';$('#time-form').hidden=false;
+  $('#sky-time').value=selected.slice(0,16);$('#time-form').hidden=false;
   const today=w.current.time.slice(0,10),date=new Date(today+'T12:00');date.setDate(date.getDate()-7);$('#sky-time').min=date.toISOString().slice(0,10)+'T00:00';date.setDate(date.getDate()+14);$('#sky-time').max=date.toISOString().slice(0,10)+'T23:00';
   if(time)params.set('time',time);else params.delete('time');history.replaceState(null,'',location.pathname+'?'+params);
   await document.fonts.ready;if(signal.aborted)return;scrollTo({top:groundStart(),behavior:'instant'});
@@ -105,6 +107,7 @@ function frame(now){
  const visible=active&&best<innerHeight*1.15;
  for(const g of groups){const show=g===active&&visible;g.el.classList.toggle('is-current',!!show);if(show&&!g.arrived){g.arrived=true;if(!motion.matches)g.el.querySelector('.card').animate([{translate:'0 -18px'},{translate:'0 0'}],{duration:850,easing:'ease-out'});}if(g!==active)g.arrived=false;}
  $('#altKm').textContent=(alt/1000).toFixed(1);
+ document.querySelectorAll('#personal-nav button').forEach(b=>{const current=visible?b.dataset.level===active.tier:b.dataset.level==='ground'&&alt<500;b.toggleAttribute('aria-current',current);if(current)b.setAttribute('aria-current','location');});
  if(window.Scene3D?.ok){$('#sky-status').hidden=true;document.body.classList.add('has3d');window.Scene3D.render({alt,dt,weatherRain:snapshot?.rain??0,clearSky:!ready||!visible,activeId:visible?active.id:null,waterOpacity:visible?1:0});}
  else if(window.Scene3D?.unavailable){$('#sky-status').textContent='The illustrated sky could not load. Please reload.';}
  requestAnimationFrame(frame);

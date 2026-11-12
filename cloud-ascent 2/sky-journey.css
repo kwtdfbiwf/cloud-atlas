@@ -28,3 +28,21 @@ html.sheet-open #personal-journey{z-index:20}
 .personal-intro{background:rgba(21,31,59,.89);border:1px solid #ffffff66;border-radius:28px;padding:28px;color:#f9f7ff}
 .personal-intro :is(#weather-status,.personal-source,.personal-weather dt){opacity:1;color:#dce4f5}
 @media(max-width:760px){.personal-intro{padding:20px;border-radius:24px}.personal-ground{padding-inline:16px}#time-form input{width:100%;max-width:100%}}
+/* Keep place and timestamp readable as separate lines, including on a narrow phone. */
+.personal-header #place-label{display:flex;flex-direction:column;align-items:center;min-width:0;max-width:none;white-space:normal;overflow:visible;line-height:1.35;text-align:center;gap:2px}
+.personal-header #place-label strong{font-size:14px;overflow-wrap:anywhere}
+.personal-header #place-label span{max-width:none;white-space:nowrap;font-size:12px;font-weight:600;overflow:visible}
+#personal-nav{position:fixed;right:28px;bottom:94px;z-index:12;display:flex;flex-direction:column;gap:6px;padding:8px;background:#1c2c4ee8;border:1px solid #cbd7ef77;border-radius:24px;backdrop-filter:blur(16px)}
+#personal-nav:empty{display:none}
+#personal-nav button{border:1px solid transparent;border-radius:999px;padding:9px 14px;min-height:40px;color:#f6f5ff;background:transparent;font:800 13px var(--sans);cursor:pointer}
+#personal-nav button[aria-current]{background:#f3efff;color:#17243d;border-color:white}
+.time-explanation{font-size:12px;line-height:1.5;color:#dce4f5;margin:10px 0 0}
+@media(max-width:760px){
+ .personal-header{align-items:flex-start}
+ .personal-header #place-label strong{font-size:12px}
+ .personal-header #place-label span{font-size:11px}
+ #personal-nav{bottom:14px;left:14px;right:100px;flex-direction:row;flex-wrap:wrap;gap:2px;padding:5px;border-radius:22px;justify-content:center}
+ #personal-nav button{padding:8px;min-height:36px;font-size:11px}
+ .personal-sticky{padding-bottom:calc(116px + env(safe-area-inset-bottom))}
+ .personal-intro .time-explanation{font-size:11px}
+}

@@ -152,7 +152,6 @@
           <span class="spot-tag">From the ground</span>
           ${c.scale ? `<div class="spot-scale" data-deg="${c.scale.deg}"><i></i><span>${c.scale.label}</span></div>` : ''}
         </div>
-        <figcaption><span class="label">How to spot it</span>${c.spot}</figcaption>
       </figure>
       <dl class="stats facts-start">
         <div><dt>Typical base</dt><dd>${c.base}</dd></div>
@@ -160,9 +159,10 @@
       </dl>
       <div class="rainline"><span>Rain</span><div class="bar"><i style="width:${c.rain}%"></i></div><b>${rainWord(c.rain)}${c.rainNote ? `, ${c.rainNote}` : ''}</b></div>
       
-      <p class="body story-start"><span class="label">How it forms</span>${c.desc}</p>
+      <p class="body story-start card-extra"><span class="label">How it forms</span>${c.desc}</p>
       <p class="body"><span class="label">Weather</span>${c.weather}</p>
-      <p class="body"><span class="label">Did you know?</span>${c.fact}</p>`;
+      <p class="body card-extra"><span class="label">Did you know?</span>${c.fact}</p>
+      <button class="cloud-read-more" type="button" data-cloud-details="${c.id}">More about ${c.name.toLowerCase()} →</button>`;
   }
 
   // Phones: a closed card is a small preview docked at the bottom; opened, it becomes a bottom
@@ -314,7 +314,7 @@
 
   // the open card's cloud, live, as you'd see it from the ground (3D only)
   function drawGroundView(t) {
-    if (t.vis < 0.15 || !Scene3D.spotter || Scene3D.captureBusy || document.querySelector('#field-dialog[open]')) return;
+    if (t.vis < 0.15 || !Scene3D.spotter || Scene3D.captureBusy || document.querySelector('dialog[open]')) return;
     const frame = $('.spot-frame', t.card);
     if (!frame) return;
     const w = frame.clientWidth, h = frame.clientHeight;
@@ -1281,7 +1281,7 @@ void main(){
       // the camera faces forward, and only turns toward a cloud after you click its chip
       const t = TIERS.reduce((a, b) => (b.vis > a.vis ? b : a));
       focusAbbr = t.vis > 0.15 && t.picked ? byId[t.cur].abbr : null;
-      if(!document.querySelector('#field-dialog[open]')) Scene3D.render({ alt, flash, dt, activeId:t.vis>.15?t.cur:null, waterOpacity:t.vis, waterCard:null, selections:Object.fromEntries(TIERS.map(t=>[t.key,t.cur])), focus: REDUCED ? null : focusAbbr, focusTarget: smooth(0.05, 0.85, t.vis) });
+      if(!document.querySelector('dialog[open]')) Scene3D.render({ alt, flash, dt, activeId:t.vis>.15?t.cur:null, waterOpacity:t.vis, waterCard:null, selections:Object.fromEntries(TIERS.map(t=>[t.key,t.cur])), focus: REDUCED ? null : focusAbbr, focusTarget: smooth(0.05, 0.85, t.vis) });
       lookingEl.classList.toggle('on', !!focusAbbr && !REDUCED);
       drawGroundView(t);
       if (focusAbbr) lookingName.textContent = byId[t.cur].name.toLowerCase();

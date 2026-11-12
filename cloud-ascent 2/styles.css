@@ -1219,3 +1219,26 @@ html body.night-sky .chip{background:#263654;color:#e6edff;border-color:#a5b6d5}
 html body.night-sky .chip[aria-selected="true"]{background:#f2edff;color:#17243d;border-color:#fff}
 /* A visible focus ring remains distinct in both sky themes. */
 html body :is(button,a,input,summary):focus-visible{outline:3px solid #ebbd56;outline-offset:4px}
+
+/* Desktop cards are an overview; longer reading opens in its own accessible dialog. */
+.cloud-read-more{display:none}
+@media(min-width:761px){
+ html body #journey .card .card-extra,html body #personal-journey .card .card-extra{display:none}
+ html body :is(#journey,#personal-journey) .card{overflow:visible;flex:0 0 auto;max-height:none}
+ html body #journey .card .spot-frame{aspect-ratio:auto;height:140px}
+ html body #journey .card .cloud-tip{font-size:18px;margin:10px 0 12px}
+ html body #journey .card .facts-start{margin-top:12px;padding-top:12px}
+ html body :is(#journey,#personal-journey) .cloud-read-more{display:inline-flex;align-items:center;margin-top:10px;min-height:38px;padding:8px 14px;border:1px solid currentColor;border-radius:999px;background:transparent;color:var(--ink);font:800 13px var(--sans);cursor:pointer}
+}
+@media(min-width:761px) and (max-height:800px){
+ html body #journey .card .spot-frame{height:100px}
+ html body #journey .card .cloud-tip{font-size:16px;margin:8px 0}
+ html body #journey .card .facts-start{margin-top:8px;padding-top:8px}
+ html body #journey .card .stats{margin-bottom:8px}
+}
+#cloud-details{width:min(580px,calc(100vw - 32px));max-height:85svh;overflow:auto;padding:30px;border:1px solid #d2dcf1;border-radius:28px;background:#f5f3fc;color:#17243d}
+#cloud-details::backdrop{background:#0d183b99;backdrop-filter:blur(6px)}
+#cloud-details h2{font-size:36px;padding-right:40px;margin:0 0 8px}
+#cloud-details section{margin-top:24px}#cloud-details section h3{font:800 14px var(--sans);margin:0 0 8px}#cloud-details section p{font:500 16px/1.65 var(--sans);margin:0}
+.details-close{position:absolute;right:18px;top:18px;width:40px;height:40px;border-radius:50%;border:1px solid #9eaec8;background:#fff;color:#17243d;font-size:26px;cursor:pointer}
+body.night-sky #cloud-details{background:#18223b;color:#f7f6ff;border-color:#9caed0}
