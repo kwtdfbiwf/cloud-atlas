@@ -1184,3 +1184,15 @@ html body .card .latin { font-size: 13.5px; color: var(--ink-soft); opacity: 1; 
   html body .card .abbr { width: 38px; height: 38px; }
   html body .tier .next-cue { display: none; }   /* the altitude panel already shows what is above */
 }
+
+/* A clear primary scroll cue, followed by one separate alternative. */
+html body .ground .hero-actions { display:flex; flex-direction:column; align-items:flex-start; gap:20px; margin-top:30px; }
+html body .ground .hero-actions .hint { margin:0; font-size:16px; line-height:1.5; }
+html body .ground .hero-alternative { display:flex; align-items:center; gap:12px; }
+html body .ground .hero-alternative > span { color:#fffaf3; font:600 13px/1.4 var(--sans); opacity:.8; }
+html body .ground .hero-actions .sky-link { margin:0; min-height:44px; padding:11px 18px; font-size:13px; line-height:1.4; text-align:left; }
+@media(max-width:700px) {
+ html body .ground .hero-actions { gap:16px; margin-top:24px; }
+ html body .ground .hero-alternative { gap:10px; max-width:100%; }
+ html body .ground .hero-actions .sky-link { padding:10px 15px; }
+}
