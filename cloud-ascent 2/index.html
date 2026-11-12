@@ -9,9 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=journey-refinement-27" />
-  <link rel="preload" href="reference-clouds/reference-clouds.glb?v=draco-1" as="fetch" crossorigin="anonymous" />
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" crossorigin="anonymous" />
+  <link rel="stylesheet" href="styles.css?v=repair-28" />
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
@@ -60,63 +58,24 @@
   <div class="nudge" id="nudge" role="status">The sky is above you — scroll <b>up</b></div>
 
   <main id="journey">
-    <!-- The document is read bottom-to-top: you start at the ground and scroll up. -->
-
-    <section class="stage top dark" id="top">
+    <!-- Reading order is ground to summit; visual stacking rises upward. -->
+    <section class="stage ground" id="ground">
       <div class="stage-inner">
-        <p class="eyebrow" data-alt-label></p>
-        <h2>Keep looking up.</h2>
-        <p class="lede">From warm, rising droplets to delicate ice crystals — you’ve climbed through the layers that make our weather.</p>
-        <p class="summit-note">Now take a look outside. What can you recognise?</p>
-        <details class="end-collection"><summary>Revisit the clouds</summary>
-          <div class="roster" id="roster" aria-label="The ten cloud types"></div>
-          <p class="roster-key"><span class="key-swatch" aria-hidden="true"></span>Tinted tiles are clouds you’ve spotted. <button type="button" class="link-btn" id="reset-spotted">Start over</button></p>
-          <p class="height-note">Cloud heights overlap. The altitude reading shows your viewpoint, not each cloud’s base.</p>
-        </details>
-        <div class="top-actions"><button class="btn" type="button" data-open-sky>Explore your local sky →</button>
-        <button class="btn" id="descend" type="button">Back to ground ↓</button></div>
-      </div>
-    </section>
-
-    <section class="tier dark" data-tier="high" id="tier-high">
-      <div class="stick">
-        <div class="col">
-          <div class="tier-head">
-            <p class="eyebrow">High clouds · 5–13 km</p>
-            <h2>Made of ice</h2>
-          </div>
-          <div class="chips" role="tablist" aria-label="High cloud types"></div>
-          <article class="card"></article>
+        <p class="eyebrow">0 km · ground level</p>
+        <h1>Put your head in the clouds</h1>
+        <p class="lede">Come meet the shapes that make our weather.</p>
+        <div class="hero-actions">
+          <p class="hint">Scroll <b>up</b> to rise into the sky</p>
+          <div class="hero-alternative"><button class="sky-link" type="button" data-open-sky>See what’s above you right now →</button></div>
         </div>
       </div>
     </section>
 
-    <section class="interlude" data-interlude="ice">
+    <section class="interlude">
       <div class="inter-inner">
         <p class="eyebrow" data-alt-label></p>
-        <h3>Into the ice</h3>
-        <p>The air is thin and colder than −30°C. Clouds above this line are built almost entirely from ice crystals, which is why they look so fine, bright and fibrous. Their names all start with <em>cirro-</em>, from the Latin for a curl of hair.</p>
-      </div>
-    </section>
-
-    <section class="tier" data-tier="mid" id="tier-mid">
-      <div class="stick">
-        <div class="col">
-          <div class="tier-head">
-            <p class="eyebrow">Middle clouds · 2–7 km</p>
-            <h2>The alto layer</h2>
-          </div>
-          <div class="chips" role="tablist" aria-label="Middle cloud types"></div>
-          <article class="card"></article>
-        </div>
-      </div>
-    </section>
-
-    <section class="interlude" data-interlude="freezing">
-      <div class="inter-inner">
-        <p class="eyebrow" data-alt-label></p>
-        <h3>Past the freezing level</h3>
-        <p>Air cools about 6.5°C for every kilometre you climb. Up here, cloud droplets are often <em>supercooled</em> — still liquid well below 0°C, waiting for a speck of dust or ice to freeze onto.</p>
+        <h3>Lifting off</h3>
+        <p>Warm, moist air rises and cools. Water gathers on tiny airborne specks — billions of droplets becoming a cloud.</p>
       </div>
     </section>
 
@@ -133,32 +92,72 @@
       </div>
     </section>
 
-    <section class="interlude">
+    <section class="interlude" data-interlude="freezing">
       <div class="inter-inner">
         <p class="eyebrow" data-alt-label></p>
-        <h3>Lifting off</h3>
-        <p>Warm, moist air rises and cools. Water gathers on tiny airborne specks — billions of droplets becoming a cloud.</p>
+        <h3>Past the freezing level</h3>
+        <p>Air cools about 6.5°C for every kilometre you climb. Up here, cloud droplets are often <em>supercooled</em> — still liquid well below 0°C, waiting for a speck of dust or ice to freeze onto.</p>
       </div>
     </section>
 
-    <section class="stage ground" id="ground">
-      <div class="stage-inner">
-        <p class="eyebrow">0 km · ground level</p>
-        <h1>Put your head in the clouds</h1>
-        <p class="lede">Come meet the shapes that make our weather.</p>
-        <div class="hero-actions">
-          <p class="hint">Scroll <b>up</b> to rise into the sky</p>
-          <div class="hero-alternative"><button class="sky-link" type="button" data-open-sky>See what’s above you right now →</button></div>
+    <section class="tier" data-tier="mid" id="tier-mid">
+      <div class="stick">
+        <div class="col">
+          <div class="tier-head">
+            <p class="eyebrow">Middle clouds · 2–7 km</p>
+            <h2>The alto layer</h2>
+          </div>
+          <div class="chips" role="tablist" aria-label="Middle cloud types"></div>
+          <article class="card"></article>
         </div>
+      </div>
+    </section>
+
+    <section class="interlude" data-interlude="ice">
+      <div class="inter-inner">
+        <p class="eyebrow" data-alt-label></p>
+        <h3>Into the ice</h3>
+        <p>The air is thin and colder than −30°C. Clouds above this line are built almost entirely from ice crystals, which is why they look so fine, bright and fibrous. Their names all start with <em>cirro-</em>, from the Latin for a curl of hair.</p>
+      </div>
+    </section>
+
+    <section class="tier dark" data-tier="high" id="tier-high">
+      <div class="stick">
+        <div class="col">
+          <div class="tier-head">
+            <p class="eyebrow">High clouds · 5–13 km</p>
+            <h2>Made of ice</h2>
+          </div>
+          <div class="chips" role="tablist" aria-label="High cloud types"></div>
+          <article class="card"></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="stage top dark" id="top">
+      <div class="stage-inner">
+        <p class="eyebrow" data-alt-label></p>
+        <h2>Keep looking up.</h2>
+        <p class="lede">From warm, rising droplets to delicate ice crystals — you’ve climbed through the layers that make our weather.</p>
+        <p class="summit-note">Now take a look outside. What can you recognise?</p>
+        <details class="end-collection"><summary>Revisit the clouds</summary>
+          <div class="roster" id="roster" aria-label="The ten cloud types"></div>
+          <p class="roster-key"><span class="key-swatch" aria-hidden="true"></span>Tinted tiles are clouds you’ve spotted. <button type="button" class="link-btn" id="reset-spotted">Start over</button></p>
+          <p class="height-note">Cloud heights overlap. The altitude reading shows your viewpoint, not each cloud’s base.</p>
+        </details>
+        <div class="top-actions"><button class="btn" type="button" data-open-sky>Explore your local sky →</button>
+        <button class="btn" id="descend" type="button">Back to ground ↓</button></div>
       </div>
     </section>
   </main>
 
+  <script src="photo-sky.js?v=repair-28"></script>
+  <script src="journey-access.js?v=repair-28"></script>
   <script src="clouds.js?v=cards-20"></script>
   <script src="cloud-details.js?v=ux-medium-26"></script>
   <script src="sheet-focus.js?v=ux-access-25"></script>
-  <script src="main.js?v=journey-refinement-27"></script>
+  <script src="main.js?v=repair-28"></script>
   <script src="field-guide.js?v=sky-only-17"></script>
-  <script type="module" src="scene3d.js?v=journey-refinement-27"></script>
+  <script type="module" src="sky-renderer.js?v=repair-28"></script>
 </body>
 </html>

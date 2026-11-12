@@ -16,7 +16,7 @@ const second=vm.runInContext('buildNoiseData()',context);
 for(const name of ['base','detail','weather'])assert.deepEqual(first[name].data,second[name].data,'noise is reproducible');
 const records=vm.createContext({window:{}});vm.runInContext(readFileSync(new URL('clouds.js',root),'utf8'),records);
 const clouds=records.window.CLOUDS;assert.equal(new Set(clouds.map(c=>c.id)).size,10);
-for(const cloud of clouds){assert.ok(cloud.look&&cloud.journey);assert.ok(existsSync(new URL(cloud.image,root)),cloud.image);}
+for(const cloud of clouds){assert.ok(cloud.look&&cloud.spot&&cloud.fact&&cloud.tip);assert.ok(['low','mid','high'].includes(cloud.tier));assert.ok(existsSync(new URL(cloud.image,root)),cloud.image);}
 for(const [w,h] of [[390,844],[1440,900],[2560,1440]]){
  const start=Math.min(.65,Math.sqrt(360000/(w*h)));
  const steps=[1,.92,.84,.77,.7].map(n=>n*start);

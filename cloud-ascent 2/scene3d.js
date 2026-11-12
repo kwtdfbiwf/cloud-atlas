@@ -135,15 +135,6 @@ function opalMaterial(){return new THREE.ShaderMaterial({
  #include <colorspace_fragment>
  }`});}
 const prototypes={};gltf.scene.traverse(o=>{if(o.isMesh){
- if(o.name==='Cb'){
-  const geo=o.geometry.clone();geo.computeBoundingBox();const box=geo.boundingBox,pos=geo.attributes.position,cx=(box.min.x+box.max.x)/2,height=box.max.y-box.min.y;
-  for(let i=0;i<pos.count;i++){
-   const y=pos.getY(i),t=(y-box.min.y)/height,anvil=softStep(.7,.95,t);
-   pos.setX(i,cx+(pos.getX(i)-cx)*(1+anvil*.42));
-   if(t>.84)pos.setY(i,box.min.y+height*(.84+(t-.84)*.48));
-  }
-  geo.computeVertexNormals();geo.computeBoundingBox();geo.computeBoundingSphere();o.geometry=geo;
- }
  prototypes[o.name]=o;o.material=opalMaterial();
 }});
 const layers=[];
@@ -163,7 +154,7 @@ for(let id=0;id<10;id++){
    if(id===0){const positions=[[9,-3,-9],[-16,1,-16],[23,4,-39],[-5,-3,-52],[-29,1,-64],[34,-2,-78]];mesh.position.set(...positions[i]);mesh.scale.setScalar(i===0?1.65:i<2?1.25:1.05);}
    if([1,5,9].includes(id)){mesh.rotation.x=.3;mesh.position.set((i-1)*14+6,(i-1)*2.5,-i*17);mesh.scale.setScalar(i===1?1.25:.9);}
    if([2,4,6,8].includes(id)){mesh.rotation.x=.16;mesh.rotation.z=-.04;mesh.position.set(6-i*12,(id===4?3:0)-i*3,-i*30);mesh.scale.setScalar(i===0?1.25:1.1);}
-   if(id===3){mesh.position.set(7,-7,-8);mesh.scale.setScalar(1.1);mesh.rotation.y=.14;}
+   if(id===3){mesh.position.set(7,-7,-8);mesh.scale.set(1.05,1.48,1.1);mesh.rotation.y=.14;}
    if(id===7){mesh.position.set((i-1)*13+5,(i-1)*4,-i*13);mesh.rotation.z=-.12;mesh.scale.setScalar(1.1);}
    // Distinct cloud families: broad sheets, rounded heaps, feathered streaks and fine grains.
    if([2,4,6,8].includes(id)){mesh.scale.x*=1.3;mesh.scale.y*=id===8?.48:id===2?.55:.7;}

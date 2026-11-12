@@ -2,6 +2,14 @@
 'use strict';
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const params=new URLSearchParams(location.search),lat=Number(params.get('lat')),lon=Number(params.get('lon'));
+const validPlace=params.has('lat')&&params.has('lon')&&Number.isFinite(lat)&&Number.isFinite(lon)&&Math.abs(lat)<=90&&Math.abs(lon)<=180;
+if(!validPlace){
+ document.title='Choose a place — Cloud Atlas';document.body.dataset.noPlace='true';document.body.classList.remove('loading');
+ document.querySelector('#place-label').textContent='Your local sky';document.querySelector('#sky-status').hidden=true;
+ document.querySelector('.personal-altitude').hidden=true;
+ document.querySelector('.personal-intro').innerHTML='<p class="eyebrow">Your local sky</p><h1>Choose a place to begin.</h1><p>Search for a town or city to explore the clouds and weather there.</p><a class="btn" href="index.html?choose-sky=1">Choose a location →</a>';
+ history.scrollRestoration='manual';requestAnimationFrame(()=>scrollTo(0,document.documentElement.scrollHeight-innerHeight));return;
+}
 const name=params.get('name')||'Your location',region=params.get('region')||'';
 const motion=matchMedia('(prefers-reduced-motion: reduce)');
 window.SkyPreferences={get reduced(){return motion.matches;}};
@@ -12,7 +20,7 @@ let request,groups=[],ready=false,last=performance.now(),snapshot=null;
 const clouds=Object.fromEntries(window.CLOUDS.map(c=>[c.id,c]));
 const heights={low:1200,mid:4500,high:9000},labels={low:'Close to home',mid:'The alto layer',high:'Made of ice'};
 const units=v=>v==null?'–':Math.round(v);
-function card(c,estimate){return `<span class="sheet-handle" aria-hidden="true"></span><button type="button" class="sheet-close" aria-label="Close ${c.name.toLowerCase()} details">×</button><div class="card-head"><span class="abbr">${c.abbr}</span><div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div></div><p class="cloud-tip">${c.tip||c.look}</p><p class="personal-estimate"><b>${estimate.level==='likely'?'Likely':'Possible'}</b> · ${esc(estimate.why)}${estimate.hidden?'. May be hidden above lower cloud.':''}</p><button type="button" class="card-toggle" aria-expanded="false"><span class="more">Show more about ${c.name.toLowerCase()}</span><span class="less">Show less</span></button><dl class="stats"><div><dt>Typical base</dt><dd>${c.base}</dd></div><div><dt>Made of</dt><dd>${c.made}</dd></div></dl><p class="body card-extra"><span class="label">How it forms</span>${c.desc}</p><p class="body"><span class="label">Weather</span>${c.weather}</p><button class="cloud-read-more" type="button" data-cloud-details="${c.id}">More about ${c.name.toLowerCase()} →</button>`;}
+function card(c,estimate){return `<span class="sheet-handle" aria-hidden="true"></span><button type="button" class="sheet-close" aria-label="Close ${c.name.toLowerCase()} details">×</button><div class="card-head"><span class="abbr">${c.abbr}</span><div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div></div><p class="cloud-tip">${c.tip||c.look}</p><p class="personal-estimate"><b>${estimate.level==='likely'?'Likely':'Possible'}</b> · ${esc(estimate.why)}${estimate.hidden?'. May be hidden above lower cloud.':''}</p><button type="button" class="card-toggle" aria-expanded="false"><span class="more">Show more about ${c.name.toLowerCase()}</span><span class="less">Show less</span></button><dl class="stats"><div><dt>Typical base</dt><dd>${c.base}</dd></div><div><dt>Made of</dt><dd>${c.made}</dd></div></dl><p class="body card-extra"><span class="label">How to spot it</span>${c.spot}</p><p class="body card-extra"><span class="label">How it forms</span>${c.desc}</p><p class="body"><span class="label">Weather</span>${c.weather}</p><p class="body card-extra"><span class="label">Did you know?</span>${c.fact}</p><button class="cloud-read-more" type="button" data-cloud-details="${c.id}">More about ${c.name.toLowerCase()} →</button>`;}
 function build(estimates){
  window.MobileSheetFocus.deactivate(false);
  document.documentElement.classList.remove('sheet-open');
@@ -29,7 +37,7 @@ function build(estimates){
      button.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?matches.length-1:(i+(e.key==='ArrowRight'?1:-1)+matches.length)%matches.length;choose(matches[next].id);el.querySelectorAll('.chip')[next].focus();};
    });return [group];
  });
- const end=document.createElement('section');end.className='personal-end';end.innerHTML=`<div><p class="eyebrow">Your sky, explored</p><h2>${estimates.length?'Keep looking up.':'Room to breathe.'}</h2><p>${estimates.length?`${estimates.length} cloud ${estimates.length===1?'type':'types'} estimated over ${esc(name)} for this time.`:'No cloud types are estimated for this time. Enjoy a clear climb, or try another hour.'}</p><p class="personal-source">Cloud types are estimates from weather-model data, not direct observations. Higher clouds may be hidden from the ground. <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather: Open-Meteo</a>.</p><a class="btn" href="index.html">Explore the full atlas →</a><button class="btn" type="button" id="return-weather">Back to your weather ↓</button></div>`;journey.prepend(end);
+ const end=document.createElement('section');end.className='personal-end';end.innerHTML=`<div><p class="eyebrow">Your sky, explored</p><h2>${estimates.length?'Keep looking up.':'Room to breathe.'}</h2><p>${estimates.length?`${estimates.length} cloud ${estimates.length===1?'type':'types'} estimated over ${esc(name)} for this time.`:'No cloud types are estimated for this time. Enjoy a clear climb, or try another hour.'}</p><p class="personal-source">Cloud types are estimates from weather-model data, not direct observations. Higher clouds may be hidden from the ground. <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather: Open-Meteo</a>.</p><a class="btn" href="index.html">Explore the full atlas →</a><button class="btn" type="button" id="return-weather">Back to your weather ↓</button></div>`;journey.replaceChildren(ground,...groups.map(g=>g.el),end);
  const nav=$('#personal-nav');nav.innerHTML=[...groups].reverse().map(g=>`<button type="button" data-level="${g.tier}" aria-label="Jump to ${g.tier==='mid'?'middle':g.tier} clouds">${g.tier==='mid'?'Middle':g.tier[0].toUpperCase()+g.tier.slice(1)}</button>`).join('')+'<button type="button" data-level="ground">Weather</button>';
  nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{const group=groups.find(g=>g.tier===b.dataset.level);scrollTo({top:group?group.el.offsetTop+group.el.offsetHeight/2-innerHeight/2:groundStart(),behavior:motion.matches?'instant':'smooth'});});
  $('#return-weather').onclick=()=>scrollTo({top:groundStart(),behavior:motion.matches?'instant':'smooth'});
@@ -66,7 +74,7 @@ async function load(time){
 }
 // Phones: each card is a small preview at the bottom that opens into a bottom sheet over a dimmed
 // sky (the same pattern as the atlas page); the page underneath stays put until it's closed.
-const PHONE=matchMedia('(max-width: 760px)');
+const PHONE=matchMedia('(max-width: 760px), (max-height: 500px) and (orientation: landscape)');
 function setCardOpen(c,open,byKeyboard=false){
  c.classList.toggle('open',open);c.querySelector('.card-toggle')?.setAttribute('aria-expanded',String(open));c.scrollTop=0;
  document.documentElement.classList.toggle('sheet-open',PHONE.matches&&!!document.querySelector('.personal-panel .card.open'));
@@ -109,7 +117,7 @@ function frame(now){
  $('#altKm').textContent=(alt/1000).toFixed(1);
  document.querySelectorAll('#personal-nav button').forEach(b=>{const current=visible?b.dataset.level===active.tier:b.dataset.level==='ground'&&alt<500;b.toggleAttribute('aria-current',current);if(current)b.setAttribute('aria-current','location');});
  if(window.Scene3D?.ok){$('#sky-status').hidden=true;document.body.classList.add('has3d');window.Scene3D.render({alt,dt,weatherRain:snapshot?.rain??0,clearSky:!ready||!visible,activeId:visible?active.id:null,waterOpacity:visible?1:0});}
- else if(window.Scene3D?.unavailable){$('#sky-status').textContent='The illustrated sky could not load. Please reload.';}
+ else if(window.Scene3D?.unavailable){$('#sky-status').hidden=true;window.PhotoSky?.render({alt,activeId:ready&&visible?active.id:null,weatherRain:snapshot?.rain??0});}
  requestAnimationFrame(frame);
 }
 addEventListener('resize',()=>{window.Scene3D?.resize?.(innerWidth,innerHeight);groundStart();});

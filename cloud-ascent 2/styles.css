@@ -1272,3 +1272,58 @@ html body #top .top-actions .btn{font:800 14px/1.4 var(--sans);padding:13px 20px
  html body #top h2{font-size:60px}
  html body #top .top-actions{flex-direction:column;align-items:flex-start}
 }
+
+/* Logical document order is ground → summit; the visual climb still scrolls upward. */
+#journey{display:flex;flex-direction:column-reverse}
+#journey>section{flex:none;width:100%}
+#photo-sky{position:fixed;inset:0;z-index:0;pointer-events:none;display:none;align-items:center;justify-content:center;opacity:0;transition:opacity .6s}
+body.photo-mode #photo-sky{display:flex}body.photo-mode #photo-sky.visible{opacity:1}
+#photo-sky img{width:90vw;height:78svh;object-fit:contain;filter:drop-shadow(0 18px 32px #243d7022);mask-image:radial-gradient(ellipse,#000 48%,transparent 75%)}
+body.photo-mode :is(.brand,.tier-head,.inter-inner,.next-cue){color:#f8f7ff}
+body.photo-mode #sky3d{display:none}
+@media(prefers-reduced-motion:reduce){#photo-sky{transition:none}}
+/* Short landscape screens use the compact sheet interaction, not a tall desktop card. */
+@media(max-height:500px) and (orientation:landscape){
+ html body .brand{top:14px;left:20px}.brand-mark{font-size:23px}
+ html body .sky-theme{top:10px;right:16px;min-height:36px;padding:8px 12px}
+ html body .sound{top:10px;right:140px;bottom:auto;min-height:36px;padding:8px 12px}
+ html body .alti{top:56px;left:20px;right:20px;bottom:auto;transform:none;width:auto;display:flex;align-items:center;gap:12px;padding:4px 8px 4px 14px;border-radius:16px}
+ html body .alti :is(.alti-label,.alti-unit,.spotted-progress,.ruler){display:none}
+ html body .alti-reading{margin:0;flex:none}.alti-zones::before,.alti-zones button::before{display:none}
+ html body .alti-zones{display:flex;flex:1;gap:4px;margin:0}
+ html body .alti-zones li{flex:1}html body .alti-zones button{min-height:30px;justify-content:center;padding:4px 10px}
+ html body .alti-zones span{display:none}html body .alti-num{font-size:22px}
+ html body .tier .stick{padding:112px 20px 14px;align-items:flex-start}
+ html body .tier .col{width:100%;max-height:none;gap:8px}
+ html body .tier-head,html body .tier .chips{width:45%}
+ html body .tier-head h2{font-size:30px}.tier-head .eyebrow{font-size:10px}
+ html body .tier .chips{gap:4px}.chip{font-size:11px;padding:7px 10px}
+ html body .next-cue{display:none}
+ html body :is(.stick,.personal-panel) .card:not(.open){position:absolute;right:20px;top:114px;width:46%;padding:14px 16px;max-height:none;margin:0;cursor:pointer}
+ html body :is(.stick,.personal-panel) .card:not(.open)>:not(.card-head):not(.cloud-tip):not(.card-toggle):not(.personal-estimate){display:none}
+ html body .card:not(.open) .card-head h3{font-size:24px}
+ html body .card:not(.open) .cloud-tip{font-size:14px;margin:8px 0}
+ html body .card .card-toggle{display:inline-flex;min-height:36px;padding:7px 12px;border:1px solid currentColor;border-radius:999px;background:transparent;color:var(--ink);font:800 12px var(--sans)}
+ .card-toggle .less{display:none}
+ html body :is(.stick,.personal-panel) .card.open{position:fixed;z-index:40;inset:auto 0 0;margin:0;width:100%;max-height:88svh;overflow:auto;overscroll-behavior:contain;padding:22px 24px;border-radius:24px 24px 0 0;box-shadow:0 0 0 100vmax #17243d99!important}
+ html body .card.open .card-extra{display:block}
+ html body .card.open :is(.card-toggle,.cloud-read-more){display:none}
+ html body .card.open .sheet-close{display:block;position:sticky;top:0;float:right;z-index:3;width:40px;height:40px;border:1px solid #8a9aba;border-radius:50%;font-size:26px;color:var(--ink);background:var(--glass)}
+ html body .card.open .spot-frame{height:160px}
+ html.sheet-open,html.sheet-open body{overflow:hidden}
+ html body .ground{padding-top:112px;min-height:110svh}
+ html body .ground h1{font-size:44px;max-width:16ch}
+ html body .ground .lede{font-size:15px;margin-top:12px}
+ html body .ground .hero-actions{gap:10px;margin-top:16px}
+ html body #top{padding-top:112px}html body #top h2{font-size:44px}
+ .interlude h3{font-size:32px}.interlude p:not(.eyebrow){font-size:15px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ html body .alti{flex-direction:row;min-height:40px}
+ html body .alti-reading{width:auto}
+ html body :is(#journey,#personal-journey) .cloud-read-more{display:none}
+ html body :is(#journey,#personal-journey) .card.open .card-extra{display:block}
+ html body :is(#journey,#personal-journey) .card:not(.open) .card-extra{display:none}
+ html body :is(#journey,#personal-journey) .card.open{max-height:88svh;overflow:auto;flex:none}
+ html body .tier-head{padding:0}
+}

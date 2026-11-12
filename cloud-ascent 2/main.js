@@ -153,6 +153,7 @@
           ${c.scale ? `<div class="spot-scale" data-deg="${c.scale.deg}"><i></i><span>${c.scale.label}</span></div>` : ''}
         </div>
       </figure>
+      <p class="body card-extra"><span class="label">How to spot it</span>${c.spot}</p>
       <dl class="stats facts-start">
         <div><dt>Typical base</dt><dd>${c.base}</dd></div>
         <div><dt>Made of</dt><dd>${c.made}</dd></div>
@@ -167,7 +168,7 @@
 
   // Phones: a closed card is a small preview docked at the bottom; opened, it becomes a bottom
   // sheet over a dimmed sky, and the page underneath stays put until it's closed.
-  const PHONE = matchMedia('(max-width: 760px)');
+  const PHONE = matchMedia('(max-width: 760px), (max-height: 500px) and (orientation: landscape)');
   function setCardOpen(t, open, byKeyboard = false) {
     t.card.classList.toggle('open', open);
     t.card.querySelector('.card-toggle')?.setAttribute('aria-expanded', String(open));
@@ -1268,7 +1269,8 @@ void main(){
     use3D = !!(window.Scene3D && Scene3D.ok);
     if(use3D!==was3D){document.body.classList.toggle('has3d',use3D);was3D=use3D;}
     document.body.dataset.skyMode = use3D ? 'clay' : window.Scene3D?.unavailable ? 'unavailable' : 'loading';
-    skyStatus.hidden = use3D;
+    const photoMode=!use3D&&!!window.Scene3D?.unavailable;
+    skyStatus.hidden = use3D||photoMode;
     skyStatus.textContent = window.Scene3D?.unavailable
       ? 'The illustrated sky could not load. Please reload.'
       : 'Shaping your little sky…';
@@ -1276,6 +1278,7 @@ void main(){
     updateCloudCrossing(alt);
     updateLiftoffOverlay(alt);
     lastAltM = alt;
+    if(photoMode){const t=TIERS.reduce((a,b)=>b.vis>a.vis?b:a);window.PhotoSky?.render({alt,activeId:t.vis>.15?t.cur:null,weatherRain:null});lookingEl.classList.remove('on');}
 
     if (use3D) {
       // the camera faces forward, and only turns toward a cloud after you click its chip

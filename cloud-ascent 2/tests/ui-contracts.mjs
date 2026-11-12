@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const root=new URL('../',import.meta.url),read=f=>readFileSync(new URL(f,root),'utf8');
+const html=read('index.html'),journey=html.slice(html.indexOf('<main id="journey">'),html.indexOf('</main>'));
+const ids=[...journey.matchAll(/<section[^>]+id="([^"]+)"/g)].map(m=>m[1]);
+assert.deepEqual(ids,['ground','tier-low','tier-mid','tier-high','top'],'the narrative must be in ascending reading order');
+assert.ok(journey.indexOf('<h1>')<journey.indexOf('<h2>'),'the introductory heading comes first');
+assert.ok(!read('tests/verify.mjs').includes('cloud.journey'),'removed journey field is not a required record');
+assert.ok(read('main.js').includes('How to spot it</span>${c.spot}'),'main sheets retain identification advice');
+assert.ok(read('sky-journey.js').includes('Did you know?</span>${c.fact}'),'local sheets retain cloud facts');
+console.log('PASS: narrative reading order, introductory heading, phone identification/facts and current cloud schema.');

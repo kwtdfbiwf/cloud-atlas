@@ -31,3 +31,12 @@ Verification:
 Sources for learning content: existing project cloud cards. Height ranges overlap; the view height is
 not a definition of cloud base. Field tools use live ground-view snapshots in 3D mode and separate
 photographic-style stills in lightweight mode. These are educational illustrations, not live weather.
+
+Current compatibility (12 November 2026 repair):
+- The main and local journeys use the ten bundled cloud photographs when WebGL2 is
+  unavailable, its context is lost, a renderer import fails, or ?lightweight / ?no-webgl2 is set.
+- These explicit modes skip loading Three.js and the cloud GLB. Normal mode uses the
+  Draco-compressed mesh renderer; the earlier raymarch performance notes above are historical.
+- Ground-to-summit source order is reversed visually with CSS, not reversed for readers.
+- Offscreen journey controls are excluded from Tab order; visible mobile sheets trap focus.
+- Short landscape viewports use the same compact sheet interaction as portrait phones.

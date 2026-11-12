@@ -59,3 +59,39 @@ html.sheet-open #personal-journey{z-index:20}
  .personal-end{padding-top:140px}
 }
 .personal-end h2{font-family:var(--serif);font-weight:400;letter-spacing:-.025em}
+body[data-no-place] #personal-nav{display:none}
+body[data-no-place] .personal-intro .btn{display:inline-flex;min-height:44px;margin-top:22px;background:#f3efff;color:#17243d;border-radius:999px;padding:12px 20px;font-weight:800;text-decoration:none}
+@media(max-height:500px) and (orientation:landscape){
+ .personal-header{inset:10px 20px auto;align-items:center}
+ .personal-header::before{height:105px}
+ #personal-nav{top:58px;bottom:auto;left:98px;right:20px;flex-direction:row;justify-content:center;padding:4px;gap:5px;min-height:40px;border-radius:16px}
+ #personal-nav button{flex:1;padding:6px 10px;min-height:30px;font-size:12px}
+ .personal-altitude{top:58px;bottom:auto;left:20px;right:auto;width:70px;min-height:40px;padding:6px;text-align:center;font-size:10px;border-radius:16px}
+ .personal-altitude span{font-size:20px}
+ .personal-sticky{padding:112px 20px 12px;align-items:flex-start}
+ .personal-panel{width:100%;max-height:none}
+ .personal-panel>h2,.personal-panel>.eyebrow,.personal-panel>.chips{width:43%}
+ .personal-panel h2{font-size:30px}
+ .personal-ground{padding:116px 24px 28px;min-height:100svh}
+ .personal-intro{padding:20px;max-width:650px}.personal-intro h1{font-size:32px}
+ .personal-weather-details:not([open]){margin-top:5px}
+ .personal-condition{font-size:20px;margin:12px 0}
+ .personal-end{padding-top:116px}
+}
+
+#personal-journey{display:flex;flex-direction:column-reverse}
+#personal-journey>section{flex:none;width:100%}
+@media(max-height:500px) and (orientation:landscape){
+ .personal-intro{display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;grid-template-areas:'title form' 'status form' 'summary form' 'hint hint';padding:14px 18px}
+ .personal-intro>.eyebrow{display:none}.personal-intro h1{grid-area:title;font-size:24px;line-height:1.1;margin:0}
+ .personal-intro #weather-status{grid-area:status;font-size:11px;line-height:1.35;margin:0}
+ #weather-summary{grid-area:summary}.personal-condition{font-size:18px;margin:4px 0}
+ .personal-weather-details{margin:0}.personal-weather-details summary{min-height:22px;padding:2px 0;font-size:12px}
+ #time-form{grid-area:form;margin:0}#time-form>div{gap:6px}
+ #time-form input{width:100%;min-height:36px;padding:6px 10px;font-size:12px}
+ #time-form button{min-height:36px;padding:6px 10px;font-size:12px}
+ .time-explanation{font-size:10px;line-height:1.4;margin-top:6px}
+ .personal-hint{grid-area:hint;font-size:12px;margin:4px 0 0}
+ body[data-no-place] .personal-intro{display:block}
+}
+@media(max-height:500px) and (orientation:landscape){.personal-header::before{height:54px}}
