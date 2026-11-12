@@ -967,13 +967,14 @@ void main(){
     });
   }
 
-  // nudge people who try to scroll down from the ground
-  const nudge = $('#nudge');
+  // someone scrolling down from the ground: the "Scroll up" line on screen gives a gentle lift
+  const groundHint = $('.ground .hint');
   let nudgeTimer = 0;
   function showNudge() {
-    nudge.classList.add('show');
+    if (!groundHint || groundHint.classList.contains('cue')) return;
+    groundHint.classList.add('cue');
     clearTimeout(nudgeTimer);
-    nudgeTimer = setTimeout(() => nudge.classList.remove('show'), 1800);
+    nudgeTimer = setTimeout(() => groundHint.classList.remove('cue'), 1300);
   }
   addEventListener('wheel', e => { if (e.deltaY > 0 && scrollY >= M.maxScroll - 2) showNudge(); }, { passive: true });
   addEventListener('keydown', e => { if ((e.key === 'ArrowDown' || e.key === 'PageDown') && scrollY >= M.maxScroll - 2) showNudge(); });
