@@ -1,7 +1,7 @@
 CLOUD ATLAS — CURRENT STATE (updated 12 November 2026)
 
 Live:   https://kwtdfbiwf.github.io/cloud-atlas/
-Local:  from this folder run   python3 -m http.server 4190 --bind 127.0.0.1
+Local:  from the repo root run   python3 -m http.server 4190 --bind 127.0.0.1
         then open http://127.0.0.1:4190
 Tests:  node tests/verify.mjs · node tests/ui-contracts.mjs · node tests/sky-weather.mjs
 

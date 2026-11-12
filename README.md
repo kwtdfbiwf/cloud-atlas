@@ -14,13 +14,14 @@
 
 ## What's here
 
-- `cloud-ascent 2/`: the website (`index.html` the climb, `sky.html` your local sky), assets, the cloud model and tests. See `cloud-ascent 2/REVIEW-NOTES.txt` for how it works.
+- The website is at the root: `index.html` (the climb), `sky.html` (your local sky), `assets/`, `reference-clouds/` (the cloud model) and `tests/`. See `REVIEW-NOTES.txt` for how it works.
+- `cloud-ascent 2/`: redirects only, so older links still open the site.
 - `cloud-ascent 3/3d/`: the Blender projects and textures.
 
 ## Run locally
 
 ```bash
-cd "cloud-ascent 2" && python3 -m http.server 4190
+python3 -m http.server 4190
 ```
 
 Then open http://localhost:4190/. Tests: `node tests/verify.mjs`, `node tests/ui-contracts.mjs`, `node tests/sky-weather.mjs`.

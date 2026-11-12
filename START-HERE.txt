@@ -1,13 +1,13 @@
 Cloud Atlas — complete website and Blender sources
 Packaged 4 November 2026
 
-cloud-ascent 2/ — latest website, assets, exported models, vendor libraries, tests and build scripts. Includes animated section titles, concise cards, identification tips, gentle card entrances, lightning and optional thunder.
+(repo root) — the website, assets, exported models, vendor libraries, tests and build scripts. Includes animated section titles, concise cards, identification tips, gentle card entrances, lightning and optional thunder.
 cloud-ascent 3/3d/ — Blender source projects and textures.
 
 Preview locally:
 1. Extract the entire ZIP.
 2. Open a terminal in the extracted folder and run:
    python3 -m http.server 4190
-3. Open http://localhost:4190/cloud-ascent%202/
+3. Open http://localhost:4190/
 
 Some Blender export scripts use paths from the original computer. Update these paths before running exports elsewhere.
