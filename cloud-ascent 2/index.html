@@ -6,14 +6,27 @@
   <meta name="theme-color" content="#6889f2" />
   <title>Cloud Atlas — Put your head in the clouds</title>
   <meta name="description" content="Cloud Atlas: float up through the sky and come meet the shapes that make our weather, all ten cloud types from fog-low stratus to ice-high cirrus." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Cloud Atlas" />
+  <meta property="og:title" content="Cloud Atlas — Put your head in the clouds" />
+  <meta property="og:description" content="Scroll up from the ground through the low, middle and high clouds and meet all ten cloud types." />
+  <meta property="og:url" content="https://kwtdfbiwf.github.io/cloud-atlas/cloud-ascent%202/" />
+  <meta property="og:image" content="https://kwtdfbiwf.github.io/cloud-atlas/cloud-ascent%202/assets/share-card.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="675" />
+  <meta property="og:image:alt" content="Cloud Atlas: pastel clouds on a blue sky with the title Put your head in the clouds." />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=repair-28" />
+  <link rel="stylesheet" href="styles.css?v=followup-29" />
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
 <body class="loading">
+  <a class="skip-link" href="#journey">Skip to the clouds</a>
+  <noscript><div class="noscript-note"><b>Cloud Atlas needs JavaScript.</b> It draws the sky and moves you up through the clouds as you scroll. Please turn JavaScript on, or try another browser.</div></noscript>
   <p id="sky-status" role="status">Shaping your little sky…</p>
   <canvas id="sky" aria-hidden="true"></canvas>
   <div id="vector-sky" aria-hidden="true">
@@ -52,7 +65,7 @@
       <li><button type="button" data-jump="low" aria-label="Low clouds, jump to 1.2 kilometres"><b>Low</b><span>1.2 km</span></button></li>
       <li><button type="button" data-jump="ground" aria-label="Ground, return to 0 kilometres"><b>Ground</b><span>0 km</span></button></li>
     </ul>
-    <p class="spotted-progress" role="status"><span id="seenN">0</span> / 10 spotted</p>
+    <p class="spotted-progress" role="status"><span id="seenN">0</span> / 10 seen</p>
   </aside>
 
   <div class="nudge" id="nudge" role="status">The sky is above you — scroll <b>up</b></div>
@@ -137,12 +150,12 @@
     <section class="stage top dark" id="top">
       <div class="stage-inner">
         <p class="eyebrow" data-alt-label></p>
-        <h2>Keep looking up.</h2>
+        <h2>Keep looking&nbsp;up.</h2>
         <p class="lede">From warm, rising droplets to delicate ice crystals — you’ve climbed through the layers that make our weather.</p>
         <p class="summit-note">Now take a look outside. What can you recognise?</p>
-        <details class="end-collection"><summary>Revisit the clouds</summary>
+        <details class="end-collection"><summary>Revisit all ten clouds</summary>
           <div class="roster" id="roster" aria-label="The ten cloud types"></div>
-          <p class="roster-key"><span class="key-swatch" aria-hidden="true"></span>Tinted tiles are clouds you’ve spotted. <button type="button" class="link-btn" id="reset-spotted">Start over</button></p>
+          <p class="roster-key"><span class="key-swatch" aria-hidden="true"></span>Tinted tiles are the clouds you’ve met on this climb. <button type="button" class="link-btn" id="reset-spotted">Start over</button></p>
           <p class="height-note">Cloud heights overlap. The altitude reading shows your viewpoint, not each cloud’s base.</p>
         </details>
         <div class="top-actions"><button class="btn" type="button" data-open-sky>Explore your local sky →</button>
@@ -151,12 +164,12 @@
     </section>
   </main>
 
-  <script src="photo-sky.js?v=repair-28"></script>
+  <script src="photo-sky.js?v=followup-29"></script>
   <script src="journey-access.js?v=repair-28"></script>
   <script src="clouds.js?v=cards-20"></script>
-  <script src="cloud-details.js?v=ux-medium-26"></script>
+  <script src="cloud-details.js?v=followup-29"></script>
   <script src="sheet-focus.js?v=ux-access-25"></script>
-  <script src="main.js?v=repair-28"></script>
+  <script src="main.js?v=followup-29"></script>
   <script src="field-guide.js?v=sky-only-17"></script>
   <script type="module" src="sky-renderer.js?v=repair-28"></script>
 </body>

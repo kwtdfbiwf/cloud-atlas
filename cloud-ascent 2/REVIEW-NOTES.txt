@@ -1,42 +1,41 @@
-CLOUD ASCENT 2 — AUDIT IMPROVEMENTS
+CLOUD ATLAS — CURRENT STATE (updated 12 November 2026)
 
-Run locally from this folder: python3 -m http.server 4190 --bind 127.0.0.1
-Open http://127.0.0.1:4190
+Live:   https://kwtdfbiwf.github.io/cloud-atlas/
+Local:  from this folder run   python3 -m http.server 4190 --bind 127.0.0.1
+        then open http://127.0.0.1:4190
+Tests:  node tests/verify.mjs · node tests/ui-contracts.mjs · node tests/sky-weather.mjs
 
-Changes:
-- Noise buffers build in a module worker and transfer to the renderer once.
-- Initial raymarch pixel budget: 180,000 desktop / 90,000 constrained-device hint.
-- Resolution steps strictly decrease; 44–64 view-march steps depending on quality.
-- Slow rendering at the minimum setting switches to the lightweight photographic sky.
-- Offscreen/background-tab work and repeated ground-view rendering are limited.
-- Camera altitude follows scroll directly; section text, HUD and camera share the same position.
-- Broader, flatter storm anvil; firmer cumulus density; darker altostratus; coarser silky cirrus ground fibres.
-- Visible near-ground rain for Nimbostratus and Cumulonimbus.
-- Separate typical cloud-base ranges from the height/viewpoint in this specific journey.
-- Permanent spotted progress with local persistence; consistent overlapping altitude bands.
-- Field tools: three-up same-field-of-view comparison and a four-question identification quiz.
-- Ground-view text descriptions, dark altimeter backing, keyboard tabs and modal focus handling.
-- Reduced motion uses a still sky, instant navigation, no camera turns, no rain or decorative movement.
+OPTIMISED FOR
+- Desktop Chrome with WebGL2, 1440 × 900 and larger.
+- Responsive phone layout (portrait and short landscape), checked in browser emulation.
+  Not yet tested on a physical iPhone or Android phone.
 
-Verification:
-- Run node tests/verify.mjs for deterministic noise-buffer output, complete cloud records/assets,
-  decreasing quality steps and pixel budgets.
-- Desktop browser: worker completion, 3D rendering, comparison snapshots, all four correct quiz
-  answers and an incorrect answer checked.
-- Compatibility paths: ?lightweight, ?motion=reduce and ?no-webgl2.
-- Phone-sized responsive layout checked in-browser; NOT a physical Android performance test.
-- No guaranteed frame rate on untested hardware. Procedural appearance still merits artistic review.
-- The existing 3d/cloud-ascent-layout.glb is unchanged. No Blender project was edited.
+WHAT THE SITE DOES
+- index.html: one page you scroll UP, from the ground (0 km) through the low, middle and high
+  cloud layers to the summit (12.5 km). Floating titles hold the page at each change in the air
+  (lifting off, the freezing level, into the ice).
+- Each layer has chips (tabs) for its clouds and one card: tip, live "From the ground" view,
+  typical base, made of, rain, weather. "More about …" opens a dialog with how to spot it, how it
+  forms and a fact. On phones the card docks at the bottom and opens as a bottom sheet with
+  everything in it.
+- "Your sky now" (dialog) → sky.html: choose a place (location or search) and a time; the page
+  climbs through only the clouds estimated there, with Open-Meteo weather (CC BY 4.0).
+- Night sky toggle, optional sound (wind, rain, thunder), a movable sun, altitude jumps.
 
-Sources for learning content: existing project cloud cards. Height ranges overlap; the view height is
-not a definition of cloud base. Field tools use live ground-view snapshots in 3D mode and separate
-photographic-style stills in lightweight mode. These are educational illustrations, not live weather.
+HOW IT'S BUILT
+- Plain HTML, CSS and JavaScript. three.js r160 draws a Draco-compressed cloud model
+  (reference-clouds/reference-clouds.glb, about 0.8 MB) built in Blender.
+- Fallbacks: ten bundled cloud photographs replace the 3D sky when WebGL2 is unavailable,
+  the context is lost or the renderer fails to load, or with ?lightweight / ?no-webgl2
+  (a notice explains why). ?motion=reduce, or the system setting, gives a still sky with no
+  camera turns, rain or decorative movement.
+- Accessibility: reading order is ground → summit (the climb is reversed visually with CSS),
+  skip link, offscreen controls removed from Tab order, chips as tabs with arrow keys, phone
+  sheets trap focus and close with ×, a tap outside, swipe down or Escape.
 
-Current compatibility (12 November 2026 repair):
-- The main and local journeys use the ten bundled cloud photographs when WebGL2 is
-  unavailable, its context is lost, a renderer import fails, or ?lightweight / ?no-webgl2 is set.
-- These explicit modes skip loading Three.js and the cloud GLB. Normal mode uses the
-  Draco-compressed mesh renderer; the earlier raymarch performance notes above are historical.
-- Ground-to-summit source order is reversed visually with CSS, not reversed for readers.
-- Offscreen journey controls are excluded from Tab order; visible mobile sheets trap focus.
-- Short landscape viewports use the same compact sheet interaction as portrait phones.
+RETIRED (kept in ../cloud-atlas-archive and in git history)
+- The raymarched volumetric renderer and its noise worker; the clay-sky, prepared-sky and
+  cumulus-study experiments; the Field tools (compare cloud sizes, identification quiz).
+
+Learning content: the cards in clouds.js. Height ranges overlap; the altimeter shows your
+viewpoint, not a cloud's base. Cloud estimates on the sky page come from forecast data, not a camera.

@@ -6,15 +6,28 @@
   <meta name="theme-color" content="#6889f2" />
   <title>Your sky — Cloud Atlas</title>
   <meta name="description" content="Cloud Atlas: float up through the sky and come meet the shapes that make our weather, all ten cloud types from fog-low stratus to ice-high cirrus." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Cloud Atlas" />
+  <meta property="og:title" content="Your local sky — Cloud Atlas" />
+  <meta property="og:description" content="Choose a place and climb through only the clouds likely over it, with live weather." />
+  <meta property="og:url" content="https://kwtdfbiwf.github.io/cloud-atlas/cloud-ascent%202/sky.html" />
+  <meta property="og:image" content="https://kwtdfbiwf.github.io/cloud-atlas/cloud-ascent%202/assets/share-card.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="675" />
+  <meta property="og:image:alt" content="Cloud Atlas: pastel clouds on a blue sky with the title Put your head in the clouds." />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=repair-28" />
+  <link rel="stylesheet" href="styles.css?v=followup-29" />
 
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
   <link rel="stylesheet" href="sky-journey.css?v=repair-28">
 </head>
 <body data-personal-sky="true" class="loading">
+  <a class="skip-link" href="#personal-journey">Skip to your sky</a>
+  <noscript><div class="noscript-note"><b>Cloud Atlas needs JavaScript.</b> It draws the sky and moves you up through the clouds as you scroll. Please turn JavaScript on, or try another browser.</div></noscript>
   <p id="sky-status" role="status">Shaping your little sky…</p>
   <canvas id="sky" aria-hidden="true"></canvas>
   <div id="vector-sky" aria-hidden="true">
@@ -33,11 +46,11 @@
   <aside class="personal-altitude" aria-label="Altitude"><span id="altKm">0.0</span> km</aside>
   <nav id="personal-nav" aria-label="Jump to your cloud layers"></nav>
   <main id="personal-journey"><section class="personal-ground" id="personal-ground"><div class="personal-intro"><p class="eyebrow">Your sky, your journey</p><h1 id="personal-title">Reading your sky…</h1><p id="weather-status" role="status">Fetching the weather for this location.</p><div id="weather-summary"></div><form id="time-form" hidden><label for="sky-time">Date & time at this location</label><div><input id="sky-time" type="datetime-local" required step="60"><button type="submit">Explore this time</button><button type="button" id="sky-now">Now</button></div><p class="time-explanation">Times are local to this place. Forecasts use hourly data; Now uses the latest reading.</p></form><p class="personal-hint">Scroll <b>up</b> to rise</p></div></section></main>
-  <script src="photo-sky.js?v=repair-28"></script>
+  <script src="photo-sky.js?v=followup-29"></script>
   <script src="journey-access.js?v=repair-28"></script>
   <script src="clouds.js?v=cards-20"></script>
-  <script src="sky-weather.js?v=location-rain-2"></script>
-  <script src="cloud-details.js?v=ux-medium-26"></script>
+  <script src="sky-weather.js?v=followup-29"></script>
+  <script src="cloud-details.js?v=followup-29"></script>
   <script src="sheet-focus.js?v=ux-access-25"></script>
   <script src="sky-journey.js?v=repair-28"></script>
   <script type="module" src="sky-renderer.js?v=repair-28"></script>

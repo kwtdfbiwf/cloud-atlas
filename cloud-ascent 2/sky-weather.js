@@ -21,7 +21,7 @@ const WEATHER={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:
       else add(cape>=50?0:1,'possible',`Some low cloud (${low}% of the sky)`);
     }
     if(mid>=60&&!steady)add(6,'likely',`A grey mid-level veil over ${mid}% of the sky`);
-    else if(mid>=15&&!steady)add(5,mid>=30?'likely':'possible',`Mid-level patches over ${mid}% of the sky`);
+    else if(mid>=15&&!steady)add(5,mid>=30?'likely':'possible',`Patches in the middle layer over ${mid}% of the sky`);
     if(high>=60)add(8,'likely',`A thin, milky ice veil over ${high}% of the sky`);
     else if(high>=10)add(7,high>=25?'likely':'possible',`Wisps of high ice cloud over ${high}% of the sky`);
     if(high>=15&&high<60&&mid<15&&low<15)add(9,'possible','High cloud this thin sometimes breaks into tiny ripples');

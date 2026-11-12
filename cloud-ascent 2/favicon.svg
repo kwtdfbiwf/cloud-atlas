@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5D75E9"/><stop offset="1" stop-color="#88ADF5"/></linearGradient>
+    <linearGradient id="cloud" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE3EF"/><stop offset=".6" stop-color="#F2BEDB"/><stop offset="1" stop-color="#B9A9EC"/></linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="url(#sky)"/>
+  <circle cx="46" cy="18" r="7" fill="#FFF1C9"/>
+  <g fill="url(#cloud)"><ellipse cx="32" cy="45" rx="22" ry="7"/><circle cx="23" cy="38" r="9"/><circle cx="33" cy="33" r="11"/><circle cx="43" cy="39" r="8"/></g>
+</svg>

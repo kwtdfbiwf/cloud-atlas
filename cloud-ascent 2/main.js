@@ -45,13 +45,21 @@
   $('#vector-sky').append(draggableSun);
   const sunDragTarget=document.createElement('button');
   sunDragTarget.id='sun-drag-target';sunDragTarget.type='button';
-  document.body.append(sunDragTarget);
+  // next to the other sky controls in keyboard order (it is positioned over the sun visually)
+  ($('#sky-theme') || document.body.lastChild).after(sunDragTarget);
   sunDragTarget.setAttribute('role','button');
   sunDragTarget.setAttribute('aria-label','Move the sun to change cloud lighting');
   sunDragTarget.setAttribute('aria-describedby','sun-drag-help');
   sunDragTarget.setAttribute('title','Drag to move the light · Double-click to reset');
   sunDragTarget.tabIndex=nightSky?-1:0;
   document.body.insertAdjacentHTML('beforeend','<span class="sun-help" id="sun-drag-help">Drag the sun, or use the arrow keys to move it. Press Home or Enter to reset its position.</span>');
+  // First visit: show "Drag to move the light" for a few seconds so people know the sun moves.
+  try {
+    if (!localStorage.getItem('cloud-atlas-sun-hint') && !REDUCED) {
+      setTimeout(() => { if (!nightSky) { sunDragTarget.classList.add('show-hint'); setTimeout(() => sunDragTarget.classList.remove('show-hint'), 5000); } }, 2500);
+      localStorage.setItem('cloud-atlas-sun-hint', '1');
+    }
+  } catch {}
   const sunLight=window.SunLight={x:.755,y:.12,moved:false};
   let sunPointer=null, sunOffset={x:0,y:0};
   function rememberSunPosition() {
