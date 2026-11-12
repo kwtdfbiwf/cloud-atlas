@@ -29,7 +29,7 @@ function build(estimates){
      button.onkeydown=e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?matches.length-1:(i+(e.key==='ArrowRight'?1:-1)+matches.length)%matches.length;choose(matches[next].id);el.querySelectorAll('.chip')[next].focus();};
    });return [group];
  });
- const end=document.createElement('section');end.className='personal-end';end.innerHTML=`<div><p class="eyebrow">Your sky, explored</p><h2>${estimates.length?'That’s your sky.':'Room to breathe.'}</h2><p>${estimates.length?`${estimates.length} cloud ${estimates.length===1?'type':'types'} estimated over ${esc(name)} for this time.`:'No cloud types are estimated for this time. Enjoy a clear climb, or try another hour.'}</p><p class="personal-source">Cloud types are estimates from weather-model data, not direct observations. Higher clouds may be hidden from the ground. <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather: Open-Meteo</a>.</p><a class="btn" href="index.html">Explore all ten clouds →</a><button class="btn" type="button" id="return-weather">Change the time ↓</button></div>`;journey.prepend(end);
+ const end=document.createElement('section');end.className='personal-end';end.innerHTML=`<div><p class="eyebrow">Your sky, explored</p><h2>${estimates.length?'Keep looking up.':'Room to breathe.'}</h2><p>${estimates.length?`${estimates.length} cloud ${estimates.length===1?'type':'types'} estimated over ${esc(name)} for this time.`:'No cloud types are estimated for this time. Enjoy a clear climb, or try another hour.'}</p><p class="personal-source">Cloud types are estimates from weather-model data, not direct observations. Higher clouds may be hidden from the ground. <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather: Open-Meteo</a>.</p><a class="btn" href="index.html">Explore the full atlas →</a><button class="btn" type="button" id="return-weather">Back to your weather ↓</button></div>`;journey.prepend(end);
  const nav=$('#personal-nav');nav.innerHTML=[...groups].reverse().map(g=>`<button type="button" data-level="${g.tier}" aria-label="Jump to ${g.tier==='mid'?'middle':g.tier} clouds">${g.tier==='mid'?'Middle':g.tier[0].toUpperCase()+g.tier.slice(1)}</button>`).join('')+'<button type="button" data-level="ground">Weather</button>';
  nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{const group=groups.find(g=>g.tier===b.dataset.level);scrollTo({top:group?group.el.offsetTop+group.el.offsetHeight/2-innerHeight/2:groundStart(),behavior:motion.matches?'instant':'smooth'});});
  $('#return-weather').onclick=()=>scrollTo({top:groundStart(),behavior:motion.matches?'instant':'smooth'});
@@ -91,7 +91,7 @@ document.addEventListener('touchend',e=>{if(!swipe)return;const {c,y}=swipe,dy=e
 // screen (phones) - then its top, just below the fixed header, so the title is never hidden.
 function groundStart(){
  const max=document.documentElement.scrollHeight-innerHeight,intro=$('.personal-intro');
- const below=$('.personal-header').getBoundingClientRect().bottom+16;
+ const below=Math.max($('.personal-header').getBoundingClientRect().bottom,PHONE.matches?$('#personal-nav').getBoundingClientRect().bottom:0)+16;
  const top=intro.getBoundingClientRect().top+scrollY;
  groundY=top-max>=below?max:Math.max(0,Math.min(max,top-below));
  return groundY;

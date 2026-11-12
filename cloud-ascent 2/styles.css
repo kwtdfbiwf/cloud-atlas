@@ -1242,3 +1242,33 @@ html body :is(button,a,input,summary):focus-visible{outline:3px solid #ebbd56;ou
 #cloud-details section{margin-top:24px}#cloud-details section h3{font:800 14px var(--sans);margin:0 0 8px}#cloud-details section p{font:500 16px/1.65 var(--sans);margin:0}
 .details-close{position:absolute;right:18px;top:18px;width:40px;height:40px;border-radius:50%;border:1px solid #9eaec8;background:#fff;color:#17243d;font-size:26px;cursor:pointer}
 body.night-sky #cloud-details{background:#18223b;color:#f7f6ff;border-color:#9caed0}
+
+/* A shorter climb, with breathing room between distinct cloud families. */
+.tier{height:210vh}.interlude{height:135vh}
+.inter-inner{max-width:390px}.interlude p:not(.eyebrow){font-size:18px;line-height:1.6}
+html body .alti{width:140px;box-shadow:none;border-color:rgba(255,255,255,.35)}
+html body .alti-num{font-size:30px}
+html body .tier .next-cue{font-size:10px;letter-spacing:.1em;margin-top:6px}
+/* The view at the top gets a clear ending, rather than another information panel. */
+html body #top{min-height:110vh;padding-block:110px 70px;position:relative;isolation:isolate}
+#top::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 65% 90%,#d0c8f43b,transparent 65%)}
+html body #top .stage-inner{max-width:680px}
+html body #top h2{font-size:clamp(52px,8vw,100px);line-height:.96;max-width:9ch;margin-bottom:24px}
+html body #top .lede{font-size:clamp(17px,1.7vw,21px);line-height:1.55;max-width:32em}
+.summit-note{font:800 17px/1.5 var(--sans);margin:22px 0 0}
+.end-collection{margin-top:26px;max-width:560px}
+.end-collection summary{cursor:pointer;font:700 13px/1.5 var(--sans);padding:10px 0;list-style-position:inside}
+.end-collection .roster{margin-top:14px;gap:7px}
+.end-collection .roster button{font-size:12px;padding:8px 12px}
+.end-collection .roster-key{margin:12px 0;font-size:12px}
+.end-collection .height-note{font-size:12px;line-height:1.5}
+html body #top .top-actions{margin-top:26px;gap:12px;flex-wrap:wrap}
+html body #top .top-actions .btn{font:800 14px/1.4 var(--sans);padding:13px 20px;border-radius:999px}
+@media(max-width:760px){
+ html body .alti{width:auto}
+ .tier{height:200vh}.interlude{height:125vh}
+ .interlude p:not(.eyebrow){font-size:16px;line-height:1.55}
+ html body #top{padding-top:150px;padding-bottom:70px;min-height:110svh}
+ html body #top h2{font-size:60px}
+ html body #top .top-actions{flex-direction:column;align-items:flex-start}
+}

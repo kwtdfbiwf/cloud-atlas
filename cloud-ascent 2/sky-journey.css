@@ -46,3 +46,16 @@ html.sheet-open #personal-journey{z-index:20}
  .personal-sticky{padding-bottom:calc(116px + env(safe-area-inset-bottom))}
  .personal-intro .time-explanation{font-size:11px}
 }
+/* Both journeys use a quiet layer strip below the header on phones. */
+@media(max-width:760px){
+ #personal-nav{top:72px;bottom:auto;left:90px;right:16px;min-height:44px;align-items:center;flex-wrap:nowrap;padding:4px;gap:1px;border-radius:16px}
+ #personal-nav button{padding:6px;font-size:10px;min-height:34px;flex:1}
+ .personal-altitude{top:72px;left:16px;right:auto;bottom:auto;width:67px;min-height:44px;padding:9px 7px;border-radius:16px;font-size:10px;white-space:nowrap;text-align:center}
+ .personal-altitude span{font-size:19px}
+ .personal-header #place-label{max-width:44vw}
+ .personal-sticky{padding-top:145px;padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+ .personal-ground{padding-top:140px}
+ .personal-panel{max-height:calc(100svh - 165px)}
+ .personal-end{padding-top:140px}
+}
+.personal-end h2{font-family:var(--serif);font-weight:400;letter-spacing:-.025em}

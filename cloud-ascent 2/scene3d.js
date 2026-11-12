@@ -48,27 +48,29 @@ function celestialMotion(reduced,id){
 }
 
 function skyColour(day,night){
- const middle=day==='#6889f2',lower=day==='#88adf5'||day==='#8096ee';
+ const brightness=new THREE.Color(day).getHSL({h:0,s:0,l:0}).l;const middle=brightness>=.48&&brightness<.72,lower=brightness>=.72;
  const dusk=middle?'#ad7d9f':lower?'#e6a180':'#70538c';
  const colour=new THREE.Color(day).lerp(new THREE.Color(night),nightBlend).lerp(new THREE.Color(dusk),Math.sin(nightBlend*Math.PI)*.42);
  const overcast=new THREE.Color(middle?'#586b85':lower?'#8493a9':'#40516b').lerp(new THREE.Color(middle?'#1c2b42':lower?'#34445d':'#111b2c'),nightBlend);
  return colour.lerp(overcast,stormBlend*.94).getStyle();
 }
 const themeColour=document.querySelector('meta[name="theme-color"]');
+// The colour changes continuously with altitude: warm open air, cooler middle, deep ice-blue.
+function altitudePalette(alt){
+ const stops=[{at:0,top:'#688fe8',middle:'#82a8ed',bottom:'#b2caf2'},{at:4500,top:'#536ed4',middle:'#718fe3',bottom:'#a0b9ec'},{at:9000,top:'#384fa9',middle:'#5b77cb',bottom:'#8fa8e2'},{at:12500,top:'#2b3c88',middle:'#4d64b5',bottom:'#91abe4'}];
+ let i=1;while(i<stops.length-1&&alt>stops[i].at)i++;
+ const a=stops[i-1],b=stops[i],f=softStep(a.at,b.at,alt);
+ return Object.fromEntries(['top','middle','bottom'].map(key=>[key,new THREE.Color(a[key]).lerp(new THREE.Color(b[key]),f).getStyle()]));
+}
 function background(alt,updateSky=false){const key=Math.round(alt/150)+':'+Math.round(nightBlend*60)+':'+Math.round(stormBlend*60);if(key===bgKey)return;bgKey=key;
- const f=clamp(alt/12500,0,1),g=bctx.createLinearGradient(0,0,512,768);
- g.addColorStop(0,skyColour(f>.6?'#5364d5':'#5d75e9',f>.6?'#0d133a':'#111b49'));g.addColorStop(.46,skyColour('#6889f2','#1c285d'));g.addColorStop(1,skyColour(f>.6?'#8096ee':'#88adf5','#38477e'));bctx.fillStyle=g;bctx.fillRect(0,0,512,768);
- const glow=bctx.createRadialGradient(500,0,4,500,0,490);glow.addColorStop(0,'#b4a1f144');glow.addColorStop(.23,'#b39ef122');glow.addColorStop(.65,'#a191f111');glow.addColorStop(1,'#a191f100');bctx.fillStyle=glow;bctx.fillRect(0,0,512,768);
+ const palette=altitudePalette(alt),top=skyColour(palette.top,'#101635'),middle=skyColour(palette.middle,'#1c2854'),bottom=skyColour(palette.bottom,'#3c4c79');
+ const g=bctx.createLinearGradient(0,0,512,768);g.addColorStop(0,top);g.addColorStop(.48,middle);g.addColorStop(1,bottom);bctx.fillStyle=g;bctx.fillRect(0,0,512,768);
+ const glow=bctx.createRadialGradient(500,0,4,500,0,490);glow.addColorStop(0,'#c8b6ee30');glow.addColorStop(1,'#c8b6ee00');bctx.fillStyle=glow;bctx.fillRect(0,0,512,768);
  if(updateSky){
-   vectorSky.style.background=`radial-gradient(ellipse at 100% 0%,#b4a1f122,transparent 65%),linear-gradient(146deg,${skyColour(f>.6?'#5364d5':'#5d75e9',f>.6?'#0d133a':'#111b49')} 0%,${skyColour('#6889f2','#1c285d')} 46%,${skyColour(f>.6?'#8096ee':'#88adf5','#38477e')} 100%)`;
+   vectorSky.style.background=`radial-gradient(ellipse at 100% 0%,#cfbdf122,transparent 65%),linear-gradient(160deg,${top} 0%,${middle} 48%,${bottom} 100%)`;
    vectorSky.style.setProperty('--night-opacity',nightBlend.toFixed(3));
-   // phones paint toolbar/bounce edges with the page's solid colour (not its gradient), so give both
-   const edge=skyColour('#6889f2','#1c285d');
-   document.documentElement.style.background=vectorSky.style.background;
-   document.documentElement.style.backgroundColor=edge;
-   themeColour?.setAttribute('content',edge);
+   document.documentElement.style.background=vectorSky.style.background;document.documentElement.style.backgroundColor=middle;themeColour?.setAttribute('content',middle);
  }
-
  texture.needsUpdate=true;
 }
 background(0,true);
@@ -106,11 +108,14 @@ function opalMaterial(){return new THREE.ShaderMaterial({
    }
    gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);
  }`,
- fragmentShader:`uniform float uLightning;uniform float uOpacity;uniform float uStorm;uniform float uGloom;uniform float uNight;uniform vec3 uSunDir;uniform float uSunLow;varying vec3 vN;varying vec3 vP;varying vec3 vPaint;
+ fragmentShader:`uniform float uKind;uniform float uLightning;uniform float uOpacity;uniform float uStorm;uniform float uGloom;uniform float uNight;uniform vec3 uSunDir;uniform float uSunLow;varying vec3 vN;varying vec3 vP;varying vec3 vPaint;
  void main(){
  vec3 n=normalize(vN);
  // Soft colour and local billow shadowing were painted offline in Blender.
  vec3 col=vPaint*(.94+.06*max(0.,n.z));
+ // High ice clouds read as cool, pale filaments; low heaps keep their warmer pastel billows.
+ if(uKind>6.5)col=mix(col,vec3(.83,.9,1.),.48);
+ else if(uKind>4.5)col=mix(col,vec3(.86,.86,.98),.18);
  // Re-light the painted billows relative to their original light, preserving their colours.
  float daylight=1.-uNight;
  float facing=dot(n,normalize(uSunDir));
@@ -129,7 +134,18 @@ function opalMaterial(){return new THREE.ShaderMaterial({
  gl_FragColor=vec4(col,uOpacity);
  #include <colorspace_fragment>
  }`});}
-const prototypes={};gltf.scene.traverse(o=>{if(o.isMesh){prototypes[o.name]=o;o.material=opalMaterial();}});
+const prototypes={};gltf.scene.traverse(o=>{if(o.isMesh){
+ if(o.name==='Cb'){
+  const geo=o.geometry.clone();geo.computeBoundingBox();const box=geo.boundingBox,pos=geo.attributes.position,cx=(box.min.x+box.max.x)/2,height=box.max.y-box.min.y;
+  for(let i=0;i<pos.count;i++){
+   const y=pos.getY(i),t=(y-box.min.y)/height,anvil=softStep(.7,.95,t);
+   pos.setX(i,cx+(pos.getX(i)-cx)*(1+anvil*.42));
+   if(t>.84)pos.setY(i,box.min.y+height*(.84+(t-.84)*.48));
+  }
+  geo.computeVertexNormals();geo.computeBoundingBox();geo.computeBoundingSphere();o.geometry=geo;
+ }
+ prototypes[o.name]=o;o.material=opalMaterial();
+}});
 const layers=[];
 for(let id=0;id<10;id++){
  const group=new THREE.Group();scene.add(group);const r=rand(71+id*311);
@@ -149,6 +165,11 @@ for(let id=0;id<10;id++){
    if([2,4,6,8].includes(id)){mesh.rotation.x=.16;mesh.rotation.z=-.04;mesh.position.set(6-i*12,(id===4?3:0)-i*3,-i*30);mesh.scale.setScalar(i===0?1.25:1.1);}
    if(id===3){mesh.position.set(7,-7,-8);mesh.scale.setScalar(1.1);mesh.rotation.y=.14;}
    if(id===7){mesh.position.set((i-1)*13+5,(i-1)*4,-i*13);mesh.rotation.z=-.12;mesh.scale.setScalar(1.1);}
+   // Distinct cloud families: broad sheets, rounded heaps, feathered streaks and fine grains.
+   if([2,4,6,8].includes(id)){mesh.scale.x*=1.3;mesh.scale.y*=id===8?.48:id===2?.55:.7;}
+   if(id===7){mesh.scale.x*=1.22;mesh.scale.y*=.72;mesh.rotation.z=-.2+i*.07;}
+   if(id===9){mesh.scale.multiplyScalar(.72);mesh.position.y=(i-1)*1.2;}
+   if(id===5){mesh.scale.y*=.85;mesh.rotation.z=(i-1)*.04;}
    cloudMaterials.push(mesh.material);
    mesh.userData={x:mesh.position.x,y:mesh.position.y,s,phase:r()*6.28,speed:.25+r()*.25};group.add(mesh);
  }

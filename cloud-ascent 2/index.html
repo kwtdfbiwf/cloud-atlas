@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=ux-medium-26" />
+  <link rel="stylesheet" href="styles.css?v=journey-refinement-27" />
   <link rel="preload" href="reference-clouds/reference-clouds.glb?v=draco-1" as="fetch" crossorigin="anonymous" />
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" crossorigin="anonymous" />
 
@@ -65,13 +65,16 @@
     <section class="stage top dark" id="top">
       <div class="stage-inner">
         <p class="eyebrow" data-alt-label></p>
-        <h2>The lid on the weather</h2>
-        <p class="lede">This is the tropopause. Above it, in the stratosphere, the air warms with height and clouds have almost nothing to grow from. Thunderstorm anvils flatten against this ceiling. Every cloud you just met lives below you now.</p>
-        <p class="height-note">Typical cloud-base ranges overlap and vary by latitude and season. The altimeter shows your viewpoint, not each cloud’s base.</p>
-        <div class="roster" id="roster" aria-label="The ten cloud types"></div>
-        <p class="roster-key"><span class="key-swatch" aria-hidden="true"></span>Tinted tiles are clouds you’ve spotted. <button type="button" class="link-btn" id="reset-spotted">Start over</button></p>
-        <div class="top-actions"><button class="btn" type="button" data-open-sky>What’s in your sky today?</button>
-        <button class="btn" id="descend" type="button">Drift back down ↓</button></div>
+        <h2>Keep looking up.</h2>
+        <p class="lede">From warm, rising droplets to delicate ice crystals — you’ve climbed through the layers that make our weather.</p>
+        <p class="summit-note">Now take a look outside. What can you recognise?</p>
+        <details class="end-collection"><summary>Revisit the clouds</summary>
+          <div class="roster" id="roster" aria-label="The ten cloud types"></div>
+          <p class="roster-key"><span class="key-swatch" aria-hidden="true"></span>Tinted tiles are clouds you’ve spotted. <button type="button" class="link-btn" id="reset-spotted">Start over</button></p>
+          <p class="height-note">Cloud heights overlap. The altitude reading shows your viewpoint, not each cloud’s base.</p>
+        </details>
+        <div class="top-actions"><button class="btn" type="button" data-open-sky>Explore your local sky →</button>
+        <button class="btn" id="descend" type="button">Back to ground ↓</button></div>
       </div>
     </section>
 
@@ -134,7 +137,7 @@
       <div class="inter-inner">
         <p class="eyebrow" data-alt-label></p>
         <h3>Lifting off</h3>
-        <p>Every cloud begins the same way. Warm, moist air rises, expands and cools until its water vapour condenses onto tiny specks of salt, dust or smoke. Billions of those droplets together are what you see as a cloud.</p>
+        <p>Warm, moist air rises and cools. Water gathers on tiny airborne specks — billions of droplets becoming a cloud.</p>
       </div>
     </section>
 
@@ -154,8 +157,8 @@
   <script src="clouds.js?v=cards-20"></script>
   <script src="cloud-details.js?v=ux-medium-26"></script>
   <script src="sheet-focus.js?v=ux-access-25"></script>
-  <script src="main.js?v=ux-medium-26"></script>
+  <script src="main.js?v=journey-refinement-27"></script>
   <script src="field-guide.js?v=sky-only-17"></script>
-  <script type="module" src="scene3d.js?v=ux-medium-26"></script>
+  <script type="module" src="scene3d.js?v=journey-refinement-27"></script>
 </body>
 </html>
