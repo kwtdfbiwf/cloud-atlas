@@ -86,6 +86,7 @@
     if(window.Scene3D?.spotter)Scene3D.spotter.key=null;
     dispatchEvent(new Event('skythemechange'));
   }
+  addEventListener('place-sun-in-veil',e=>{moveSun(e.detail.x*innerWidth,e.detail.y*innerHeight);refreshLightPreview();});
   function resetSun() {
     draggableSun.style.left='';draggableSun.style.top='';draggableSun.style.right='';
     sunLight.moved=false;rememberSunPosition();refreshLightPreview();

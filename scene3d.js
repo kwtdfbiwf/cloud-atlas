@@ -35,7 +35,7 @@ function celestialMotion(reduced,id){
  moonElement.style.opacity=(softStep(.38,.85,nightBlend)*(1-stormBlend*.85)).toFixed(3);
  moonElement.style.transform=`translateY(${reduced?0:((1-moonRise)*86).toFixed(3)}vh)`;
  starElement.style.opacity=(softStep(.4,.98,nightBlend)*(1-stormBlend*.96)).toFixed(3);
- solarHalo.style.opacity=id===8?'1':'0';
+ solarHalo.style.opacity=id===8?String(window.HaloDiscovery?.amount??1):'0';
  const canDrag=nightBlend<.08&&stormBlend<.8;
  const dragTarget=document.querySelector('#sun-drag-target');
  if(dragTarget){
@@ -281,6 +281,13 @@ S.render=({alt=0,clearSky=false,weatherRain=null,activeId=null,waterCard=null,wa
  if(mix<1){const g=layers[previous];g.visible=true;g.position.y=clamp((levels[previous]-alt)/1800,-2.5,2.5)*13;for(const m of g.children){m.material.transparent=true;m.material.opacity=(1-mix)*(previous===8?.2:previous===6?.65:previous===7?.82:1);m.material.uniforms.uOpacity.value=m.material.opacity;m.material.depthWrite=false;}}
  updateLightning(dt,!clearSky&&activeId===3&&waterOpacity>.6,reduced);
  camera.position.set(0,0,w<h?42:34);camera.lookAt(w>900?-2:0,1,0);
+ // Project the actual ice veil into screen space for the optional sun experiment.
+ camera.updateMatrixWorld();layers[8].updateWorldMatrix(true,true);
+ if(id===8&&!clearSky&&waterOpacity>.6){
+  const shortLandscape=w>h&&h<500,portrait=w<h;
+  const center=new THREE.Box3().setFromObject(layers[8].children[shortLandscape?1:0]).getCenter(new THREE.Vector3()).project(camera);
+  window.HaloVeil={x:clamp((center.x+1)/2,shortLandscape?.18:portrait?.5:.57,shortLandscape?.4:portrait?.68:.82),y:clamp((1-center.y)/2,shortLandscape?.5:.28,shortLandscape?.72:.5),rx:.13,ry:.12,visible:true};
+ }else window.HaloVeil={visible:false};
  // SVG sky sits behind the transparent cloud canvas, so clouds occlude the stars.
  scene.background=null;
  if(clearSky){layers.forEach(g=>g.visible=false);lightning.visible=false;}
