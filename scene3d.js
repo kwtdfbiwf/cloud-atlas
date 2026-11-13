@@ -81,8 +81,8 @@ draco.dispose();
 // The minimum shade stays lavender-blue, so undersides never fall into black.
 function opalMaterial(){return new THREE.ShaderMaterial({
  vertexColors:true,
- uniforms:{uLightning:{value:0},uOpacity:{value:1},uStorm:{value:0},uGloom:{value:0},uSunDir:{value:new THREE.Vector3(.51,.76,1.2)},uSunLow:{value:0},uNight:{value:nightBlend},uKind:{value:0},uTime:{value:0},uMotion:{value:1}},
- vertexShader:`uniform float uTime;uniform float uKind;uniform float uMotion;
+ uniforms:{uBuild:{value:0},uExperiment:{value:0},uBase:{value:0},uHeight:{value:1},uLightning:{value:0},uOpacity:{value:1},uStorm:{value:0},uGloom:{value:0},uSunDir:{value:new THREE.Vector3(.51,.76,1.2)},uSunLow:{value:0},uNight:{value:nightBlend},uKind:{value:0},uTime:{value:0},uMotion:{value:1}},
+ vertexShader:`uniform float uBuild;uniform float uExperiment;uniform float uBase;uniform float uHeight;uniform float uTime;uniform float uKind;uniform float uMotion;
  varying vec3 vN;varying vec3 vP;varying vec3 vPaint;
  void main(){
    vN=normalize(normalMatrix*normal);vP=position;vPaint=color.rgb;
@@ -105,6 +105,16 @@ function opalMaterial(){return new THREE.ShaderMaterial({
        // Patch clouds soften and swell in an unhurried wave across the band.
        p+=normal*.045*sin(uTime*.3+position.x*.35+position.z*.22);
      }
+   }
+   // Grow upwards from the existing base, without stretching the flat underside.
+   float rise=max(0.,p.y-uBase);
+   float top=smoothstep(.55,.95,rise/uHeight);
+   if(uKind<.5){
+     p.y+=rise*.38*uBuild;
+     p.x+=normal.x*.22*uBuild*top;
+   }else if(abs(uKind-3.)<.5){
+     p.y=uBase+rise*(1.+uExperiment*(-.25+.55*uBuild));
+     p.x*=1.+uExperiment*top*(-.32+.62*uBuild);
    }
    gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);
  }`,
@@ -145,6 +155,9 @@ for(let id=0;id<10;id++){
    const proto=prototypes[id===0?'Cu_'+i%3:labels[id]];if(!proto)throw new Error('Missing '+labels[id]);
    const mesh=new THREE.Mesh(proto.geometry,proto.material.clone());
    mesh.material.uniforms.uKind.value=id;
+   mesh.geometry.computeBoundingBox();
+   mesh.material.uniforms.uBase.value=mesh.geometry.boundingBox.min.y;
+   mesh.material.uniforms.uHeight.value=Math.max(.01,mesh.geometry.boundingBox.max.y-mesh.geometry.boundingBox.min.y);
    if(id===3||id===4)mesh.material.uniforms.uStorm.value=1;
    
    // Loose bands, staggered in depth, rather than a tiled grid.
@@ -251,7 +264,11 @@ S.lowerQuality=()=>{if(quality<=.7)return false;quality=Math.max(.7,quality-.15)
 function prepare(id,alt,opacity=1,ground=false){
  layers.forEach((g,j)=>{g.visible=j===id;});const g=layers[id];
  g.position.y=ground?0:clamp((levels[id]-alt)/1800,-2.5,2.5)*13;
- for(const mesh of g.children){const d=mesh.userData;mesh.position.x=d.x+Math.sin(time*.07+d.phase)*2;mesh.position.y=d.y;const alpha=opacity*(id===8?.2:id===6?.65:id===7?.82:1);mesh.material.transparent=alpha<.999;mesh.material.opacity=alpha;mesh.material.uniforms.uOpacity.value=alpha;mesh.material.uniforms.uMotion.value=ground||window.SkyPreferences?.reduced?0:1;mesh.material.depthWrite=alpha>.98;}
+ for(const mesh of g.children){const d=mesh.userData;mesh.position.x=d.x+Math.sin(time*.07+d.phase)*2;mesh.position.y=d.y;
+ const experiment=!ground&&window.CloudExperiments?.id===id?window.CloudExperiments:null;
+ mesh.material.uniforms.uBuild.value=experiment?.growth||0;
+ mesh.material.uniforms.uExperiment.value=experiment?.engaged||0;
+ const alpha=opacity*(id===8?.2:id===6?.65:id===7?.82:1);mesh.material.transparent=alpha<.999;mesh.material.opacity=alpha;mesh.material.uniforms.uOpacity.value=alpha;mesh.material.uniforms.uMotion.value=ground||window.SkyPreferences?.reduced?0:1;mesh.material.depthWrite=alpha>.98;}
  return g;
 }
 S.render=({alt=0,clearSky=false,weatherRain=null,activeId=null,waterCard=null,waterOpacity=1,selections={low:0,mid:5,high:7},dt=.016})=>{
@@ -279,7 +296,14 @@ S.render=({alt=0,clearSky=false,weatherRain=null,activeId=null,waterCard=null,wa
  if(rain.visible){for(let i=0;i<48;i++){const r=rand(i*79+83),x=(r()-.5)*22+6,y=layers[id].position.y-4-((r()*13+time*(2+r()*2))%14);rainDummy.position.set(x,y,-r()*10);rainDummy.scale.set(.035,.16,.035);rainDummy.updateMatrix();rain.setMatrixAt(i,rainDummy.matrix);}rain.instanceMatrix.needsUpdate=true;}
  halo.visible=false;sun.visible=false;for(let i=0;i<sparkles.length;i++)sparkles[i].material.opacity=.28+Math.sin(time*.7+i)*.18;
  if(mix<1){const g=layers[previous];g.visible=true;g.position.y=clamp((levels[previous]-alt)/1800,-2.5,2.5)*13;for(const m of g.children){m.material.transparent=true;m.material.opacity=(1-mix)*(previous===8?.2:previous===6?.65:previous===7?.82:1);m.material.uniforms.uOpacity.value=m.material.opacity;m.material.depthWrite=false;}}
- updateLightning(dt,!clearSky&&activeId===3&&waterOpacity>.6,reduced);
+ const experiment=window.CloudExperiments;
+ const buildingStorm=experiment?.id===3&&experiment.engaged>0&&experiment.growth<1;
+ updateLightning(dt,!clearSky&&activeId===3&&waterOpacity>.6&&!buildingStorm,reduced);
+ if(experiment?.strike){
+   experiment.strike=false;
+   if(!reduced&&!clearSky&&activeId===3&&waterOpacity>.6){strike();nextStrike=stormElapsed+10;}
+ }
+ window.CloudExperimentView={id:activeId,visible:!clearSky&&waterOpacity>.6};
  camera.position.set(0,0,w<h?42:34);camera.lookAt(w>900?-2:0,1,0);
  // Project the actual ice veil into screen space for the optional sun experiment.
  camera.updateMatrixWorld();layers[8].updateWorldMatrix(true,true);

@@ -1374,3 +1374,34 @@ html body .ground .hint.cue { animation: hint-lift 1.2s ease-out; text-shadow: 0
 
 body[data-reduced-motion="true"] #day-sun-halo{transition:none}
 @media(max-height:500px) and (orientation:landscape){#halo-discovery{left:20px;right:auto;width:43%}}
+
+/* Optional cloud experiments share the quiet discovery treatment. */
+#cloud-experiment{position:fixed;z-index:3;right:5vw;bottom:36px;width:min(310px,40vw);padding:15px 18px;border:1px solid #ffffff66;border-radius:22px;background:#1c2b4ee8;color:#f8f6ff;backdrop-filter:blur(16px)}
+#cloud-experiment[hidden],#cloud-experiment [hidden]{display:none}
+#cloud-experiment p{font:600 14px/1.5 var(--sans);margin:0}
+.experiment-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+#cloud-experiment button{padding:8px 12px;min-height:38px;border-radius:999px;border:1px solid #d1dbef;background:transparent;color:inherit;font:800 12px var(--sans);cursor:pointer}
+#cloud-experiment .feed-cloud{background:#e9e4fc;color:#263653;touch-action:none;user-select:none;-webkit-user-select:none}
+#cloud-experiment .feed-cloud[data-holding=true]{background:#d5c3fa}
+#cloud-experiment button:disabled{opacity:.65;cursor:default}
+.updraft-meter{height:3px;background:#ffffff30;margin-top:12px;border-radius:4px;overflow:hidden}
+.updraft-meter i{display:block;width:100%;height:100%;background:#dcc6ff;transform-origin:left;transform:scaleX(var(--growth,0))}
+#finger-dialog{box-sizing:border-box;width:min(680px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:28px;border:1px solid #ffffffaa;border-radius:28px;background:#eaf0fff2;color:#2b3c62;box-shadow:0 20px 80px #13234740;font-family:var(--sans)}
+#finger-dialog::backdrop{background:#14234499;backdrop-filter:blur(6px)}
+#finger-dialog h2{font:700 clamp(25px,4vw,36px)/1.15 var(--serif);margin:0 30px 12px 0}
+#finger-dialog p{font-size:15px;line-height:1.5}
+.finger-close{position:absolute;right:16px;top:12px;width:36px;height:36px;border:0;background:transparent;color:inherit;font-size:28px;cursor:pointer}
+.finger-tabs{display:flex;gap:8px;margin:18px 0 12px}
+.finger-tabs button{border:1px solid #697b9c;background:transparent;color:inherit;padding:10px 14px;border-radius:999px;font:800 13px var(--sans);cursor:pointer}
+.finger-tabs button[aria-pressed=true]{background:#2b3c62;color:#fff}
+.finger-view{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:2;background:linear-gradient(#506fc5,#aec9ed)}
+.finger-view img{display:block;width:100%;height:100%;object-fit:contain}
+.finger-guide{position:absolute;bottom:0;left:50%;transform:translateX(-50%);height:75%;pointer-events:none;min-width:12px}
+.finger-guide svg{width:100%;height:100%;fill:#ffe6d9aa;stroke:#fff7ec;stroke-width:1.5;preserve-aspect-ratio:none}
+.finger-guide span{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);white-space:nowrap;padding:3px 8px;border-radius:999px;background:#263653;color:#fff;font-size:10px}
+.finger-slider{display:block;margin-top:16px;font-size:13px;font-weight:800}
+.finger-slider input{display:block;width:100%;margin:10px 0;accent-color:#6955aa;min-height:28px}
+#finger-dialog .finger-caption{font-weight:800;margin-bottom:8px}
+#finger-dialog .finger-note{font-size:12px;margin:0}
+@media(max-width:760px){#cloud-experiment{right:16px;left:16px;bottom:215px;width:auto;padding:12px 14px}#cloud-experiment p{font-size:12px}#cloud-experiment button{min-height:36px;font-size:11px}#finger-dialog{padding:24px 18px}.finger-tabs button{font-size:12px;padding:9px 11px}}
+@media(max-height:500px) and (orientation:landscape){#cloud-experiment{left:20px;right:auto;bottom:12px;width:43%;padding:9px 12px}#cloud-experiment p{font-size:11px}#cloud-experiment button{min-height:30px;padding:5px 10px}.updraft-meter{margin-top:8px}.experiment-actions{margin-top:7px}#finger-dialog{width:min(680px,calc(100% - 32px));padding:20px}.finger-view{max-height:32vh}}
