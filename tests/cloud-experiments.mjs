@@ -20,14 +20,14 @@ const state=context.window.CloudExperiments,panel=nodes[0],hold=panel.querySelec
 function tick(n=1){for(let i=0;i<n;i++){now+=50;raf(now);}}
 function view(id,visible=true){context.window.CloudExperimentView={id,visible};tick();}
 view(0);assert.equal(panel.hidden,false);assert.equal(panel.parentNode,host,'the experiment is part of its cloud card');
-hold.emit('pointerdown',{button:0,pointerId:1});tick(12);assert.ok(state.growth>.15&&state.growth<.3,'holding grows gradually');
-hold.emit('pointerup');const paused=state.growth;tick(10);assert.equal(state.growth,paused,'releasing pauses the updraft');
+hold.emit('pointerdown',{button:0,pointerId:1});tick(12);assert.ok(state.growth>.15&&state.growth<.3,'holding grows gradually');assert.equal(panel.dataset.attention,'sky','growth directs attention to the sky');
+hold.emit('pointerup');const paused=state.growth;tick(10);assert.equal(state.growth,paused,'releasing pauses the updraft');assert.equal(panel.dataset.attention,'idle');
 auto.emit('click');tick(80);assert.equal(state.growth,1);assert.equal(state.strike,false,'cumulus never triggers lightning');
 assert.equal(hold.hidden,true,'completed prompts remove the spent hold control');
 assert.equal(panel.querySelector('.updraft-meter').hidden,true,'the progress bar gives way to the learning fact');
 assert.equal(panel.querySelector('p').textContent,'Warm air rises and cools, building the fluffy top above a level base.');
 assert.equal(panel.querySelector('.discovery-title').hidden,true,'the task heading gives way to the explanation');
-assert.equal(panel.querySelector('.discovery-label').textContent,'What you discovered');
+assert.equal(panel.querySelector('.discovery-label').textContent,'What you discovered');assert.equal(panel.dataset.attention,'explain','completion brings the explanation back into focus');
 view(3);assert.equal(state.growth,0,'switching clouds resets the experiment');
 auto.emit('click');tick(100);assert.equal(state.growth,1);assert.equal(state.strike,true,'the storm completion requests one strike');
 state.strike=false;tick(30);assert.equal(state.strike,false,'completion does not request repeated strikes');

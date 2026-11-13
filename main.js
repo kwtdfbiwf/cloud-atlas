@@ -256,12 +256,16 @@
     t.cur = id;
     t.t0 = performance.now() / 1000;
     $$('.chip', t.chips).forEach(b => (b.setAttribute('aria-selected', +b.dataset.id === id), b.tabIndex=+b.dataset.id===id?0:-1));
+    clearTimeout(t.swapTimer);
     t.card.classList.add('swap');
-    setTimeout(() => {
+    t.card.setAttribute('aria-busy','true');
+    t.swapTimer=setTimeout(() => {
+      if(t.cur!==id)return;
       t.card.innerHTML = cardHTML(byId[id], t.card.classList.contains('open'));
       t.card.setAttribute('aria-labelledby', `chip-${id}`);
       t.card.scrollTop = 0;
       t.card.classList.remove('swap');
+      t.card.setAttribute('aria-busy','false');
     }, 200);
     if (t.vis > 0.6) markSeen(id);
   }

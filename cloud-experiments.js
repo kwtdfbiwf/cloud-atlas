@@ -27,7 +27,7 @@
   const active=!!host&&!document.querySelector('dialog[open],.card.open');
   if(active&&panel.parentNode!==host)host.append(panel);
   panel.hidden=!active;
-  if(!active){release();automatic=false;requestAnimationFrame(frame);return;}
+  if(!active){panel.dataset.attention='idle';release();automatic=false;requestAnimationFrame(frame);return;}
   const reduced=window.SkyPreferences?.reduced;
   if(id!==5&&(holding||automatic)&&state.growth<1){
    state.engaged=reduced?1:Math.min(1,state.engaged+dt*3);
@@ -48,6 +48,7 @@
    if(hold.hidden&&document.activeElement===hold)auto.focus({preventScroll:true});
    auto.hidden=id===5;meter.hidden=id===5||state.growth===0||state.growth===1;
   }
+  panel.dataset.attention=(holding||automatic)&&state.growth<1?'sky':(id===5?fingerTried:state.growth===1)?'explain':'idle';
   meter.style.setProperty('--growth',state.growth);
   hold.dataset.holding=String(holding);
   panel.dataset.cloud=String(id);panel.dataset.complete=String(id===5?fingerTried:state.growth===1);

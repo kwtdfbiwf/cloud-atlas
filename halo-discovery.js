@@ -17,7 +17,7 @@
   const active=!!host&&!!veil?.visible&&!!window.Scene3D?.ok&&!document.querySelector('dialog[open],.card.open');
   if(active&&note.parentNode!==host)host.append(note);
   note.hidden=!active;
-  if(!active){target.hidden=true;state.amount=0;requestAnimationFrame(frame);return;}
+  if(!active){note.dataset.attention='idle';target.hidden=true;state.amount=0;requestAnimationFrame(frame);return;}
   const sun=window.SunLight,reduced=window.SkyPreferences?.reduced;
   const distance=sun?Math.hypot((sun.x-veil.x)/veil.rx,(sun.y-veil.y)/veil.ry):2;
   const desired=!night&&sun?.moved?Math.max(0,Math.min(1,(1-distance)*2)):0;
@@ -33,6 +33,7 @@
    text.textContent=night?'Try this in daylight: move the sun behind the ice veil.':found?'Ice crystals bend sunlight into a halo about 22° from the sun.':'Drag the sun into the marked ice veil to reveal a ring of light.';
    button.textContent=night?'Switch to daylight':found?'Show again':'Reveal the halo';
   }
+  note.dataset.attention=found&&!night?'explain':!night&&document.querySelector('#sun-drag-target.is-dragging')?'sky':'idle';
   note.dataset.state=mode;document.body.dataset.haloDiscovered=String(found);
   requestAnimationFrame(frame);
  }
