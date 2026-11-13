@@ -1421,3 +1421,27 @@ body[data-reduced-motion="true"] #day-sun-halo{transition:none}
 .details-facts>div{flex:1}.details-facts dt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}.details-facts dd{margin:0}
 #cloud-experiment[data-complete=true] .experiment-copy,#halo-discovery[data-state=found] .halo-instruction{font-weight:800;font-size:16px}
 @media(max-width:760px),(max-height:500px) and (orientation:landscape){#cloud-experiment[data-complete=true] .experiment-copy,#halo-discovery[data-state=found] .halo-instruction{font-size:13px}}
+
+/* The discovery belongs to the cloud card, alongside its name and spotting tip. */
+html body #journey .card:not(.open)>.cloud-discovery-slot{display:block}
+html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery){position:static;inset:auto;z-index:auto;box-sizing:border-box;width:auto;max-width:none;margin:14px 0 8px;padding:14px 0 0;border:0;border-top:1px solid currentColor;border-radius:0;background:transparent;color:inherit;backdrop-filter:none}
+html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery) p{font-size:15px;line-height:1.5}
+html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery) button{border-color:currentColor;color:inherit;background:transparent;font-size:12px;min-height:38px}
+html body #journey .cloud-discovery-slot #cloud-experiment .feed-cloud{background:#2b3c62;color:#fff;border-color:#2b3c62}
+html body.night-sky #journey .cloud-discovery-slot #cloud-experiment .feed-cloud{background:#e5dcf6;color:#263653;border-color:#e5dcf6}
+html body #journey .cloud-discovery-slot .updraft-meter{background:#697b9c44}
+html body #journey .cloud-discovery-slot .updraft-meter i{background:#7963b4}
+html body #journey .cloud-discovery-slot :is(#cloud-experiment[data-complete=true],#halo-discovery[data-state=found]) p{font-size:17px;font-weight:800}
+@media(max-width:760px),(max-height:500px) and (orientation:landscape){
+ html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery){margin:10px 0 6px;padding-top:10px}
+ html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery) p{font-size:13px}
+ html body #journey .cloud-discovery-slot :is(#cloud-experiment[data-complete=true],#halo-discovery[data-state=found]) p{font-size:14px}
+}
+@media(max-height:500px) and (orientation:landscape){
+ html body #journey .card:not(.open){padding:12px 16px;max-height:calc(100svh - 130px);overflow:auto;scrollbar-width:thin;scrollbar-color:#7180a466 transparent}
+ html body #journey .card:not(.open) .latin{display:none}
+ html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery){margin:6px 0 4px;padding-top:8px}
+ html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery) p{font-size:12px;line-height:1.4}
+ html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery) button{min-height:30px;padding:5px 10px;font-size:11px}
+ html body #journey .cloud-discovery-slot .experiment-actions{margin-top:6px}
+}

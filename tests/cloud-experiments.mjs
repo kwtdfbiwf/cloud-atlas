@@ -9,16 +9,17 @@ class Element {
  emit(k,e={}){for(const f of this.listeners[k]||[])f({preventDefault(){},...e});}
  querySelector(k){if(!this.children.has(k))this.children.set(k,new Element());return this.children.get(k);}
  querySelectorAll(){return [];}
+ append(el){el.parentNode=this;}
  focus(){} setPointerCapture(){} showModal(){this.open=true;} close(){this.open=false;this.emit('close');}
 }
 const body=new Element(),nodes=[],doc=new Element();let blocked=false,raf,now=0;
-doc.body=body;body.append=(...els)=>nodes.push(...els);doc.createElement=()=>new Element();doc.querySelector=()=>blocked?{}:null;
+doc.body=body;body.append=(...els)=>nodes.push(...els);doc.createElement=()=>new Element();const host=new Element();doc.querySelector=selector=>selector.startsWith('[data-cloud-discovery=')?host:blocked?{}:null;
 const context={document:doc,window:{Scene3D:{ok:true},SkyPreferences:{reduced:false}},performance:{now:()=>now},requestAnimationFrame:fn=>raf=fn,addEventListener(){},Math};
 vm.runInNewContext(readFileSync(new URL('../cloud-experiments.js',import.meta.url),'utf8'),context);
 const state=context.window.CloudExperiments,panel=nodes[0],hold=panel.querySelector('.feed-cloud'),auto=panel.querySelector('.auto-cloud');
 function tick(n=1){for(let i=0;i<n;i++){now+=50;raf(now);}}
 function view(id,visible=true){context.window.CloudExperimentView={id,visible};tick();}
-view(0);assert.equal(panel.hidden,false);
+view(0);assert.equal(panel.hidden,false);assert.equal(panel.parentNode,host,'the experiment is part of its cloud card');
 hold.emit('pointerdown',{button:0,pointerId:1});tick(12);assert.ok(state.growth>.15&&state.growth<.3,'holding grows gradually');
 hold.emit('pointerup');const paused=state.growth;tick(10);assert.equal(state.growth,paused,'releasing pauses the updraft');
 auto.emit('click');tick(80);assert.equal(state.growth,1);assert.equal(state.strike,false,'cumulus never triggers lightning');

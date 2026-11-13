@@ -13,7 +13,9 @@
  };
  function frame(){
   const veil=window.HaloVeil,night=document.body.classList.contains('night-sky');
-  const active=!!veil?.visible&&!!window.Scene3D?.ok&&!document.querySelector('dialog[open],.card.open');
+  const host=document.querySelector('[data-cloud-discovery="8"]');
+  const active=!!host&&!!veil?.visible&&!!window.Scene3D?.ok&&!document.querySelector('dialog[open],.card.open');
+  if(active&&note.parentNode!==host)host.append(note);
   note.hidden=!active;
   if(!active){target.hidden=true;state.amount=0;requestAnimationFrame(frame);return;}
   const sun=window.SunLight,reduced=window.SkyPreferences?.reduced;

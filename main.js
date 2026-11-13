@@ -153,6 +153,7 @@
         <div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div>
       </div>
       <p class="cloud-tip">${c.tip}</p>
+      <div class="cloud-discovery-slot" data-cloud-discovery="${c.id}"></div>
       <button type="button" class="card-toggle" aria-expanded="${open}">
         <span class="more">Learn more<span class="sr-only"> about ${c.name.toLowerCase()}</span></span><span class="less">Show less</span>
       </button>
@@ -209,6 +210,7 @@
     // explain the raindrop on the chips of rain-bearing clouds
     if (t.types.some(id => byId[id].rainFx)) t.chips.insertAdjacentHTML('beforeend', `<span class="chip-key" aria-hidden="true">${DROP}Brings rain</span>`);
     t.card.addEventListener('click', e => {
+      if(e.target.closest('.cloud-discovery-slot'))return;
       if (e.target.closest('.sheet-close')) { setCardOpen(t, false, e.detail === 0); return; }
       // phones: the whole closed preview is one big target, not just the small button
       const toggle = e.target.closest('.card-toggle') || (PHONE.matches && !t.card.classList.contains('open') ? t.card : null);

@@ -23,7 +23,9 @@
   const view=window.CloudExperimentView;
   const id=view?.visible&&window.Scene3D?.ok&&[0,3,5].includes(view.id)?view.id:null;
   if(id!==state.id){reset();state.id=id;}
-  const active=id!==null&&!document.querySelector('dialog[open],.card.open');
+  const host=id!==null?document.querySelector(`[data-cloud-discovery="${id}"]`):null;
+  const active=!!host&&!document.querySelector('dialog[open],.card.open');
+  if(active&&panel.parentNode!==host)host.append(panel);
   panel.hidden=!active;
   if(!active){release();automatic=false;requestAnimationFrame(frame);return;}
   const reduced=window.SkyPreferences?.reduced;
