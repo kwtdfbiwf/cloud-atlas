@@ -154,7 +154,7 @@
       </div>
       <p class="cloud-tip">${c.tip}</p>
       <button type="button" class="card-toggle" aria-expanded="${open}">
-        <span class="more">Show more about ${c.name.toLowerCase()}</span><span class="less">Show less</span>
+        <span class="more">Learn more<span class="sr-only"> about ${c.name.toLowerCase()}</span></span><span class="less">Show less</span>
       </button>
       <figure class="spotter">
         <div class="spot-frame" role="img" aria-label="${c.look}"><img class="ground-photo" src="${c.image}" alt="" loading="lazy" />
@@ -172,7 +172,7 @@
       <p class="body story-start card-extra"><span class="label">How it forms</span>${c.desc}</p>
       <p class="body"><span class="label">Weather</span>${c.weather}</p>
       <p class="body card-extra"><span class="label">Did you know?</span>${c.fact}</p>
-      <button class="cloud-read-more" type="button" data-cloud-details="${c.id}">More about ${c.name.toLowerCase()} →</button>`;
+      <button class="cloud-read-more" type="button" data-cloud-details="${c.id}" aria-label="Learn more about ${c.name.toLowerCase()}">Learn more →</button>`;
   }
 
   // Phones: a closed card is a small preview docked at the bottom; opened, it becomes a bottom

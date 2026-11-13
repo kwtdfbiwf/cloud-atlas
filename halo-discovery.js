@@ -27,8 +27,8 @@
   const mode=night?'night':found?'found':'invite';
   if(mode!==previous){
    previous=mode;
-   text.textContent=night?'Try this in daylight: move the sun behind the ice veil.':found?'A halo! Ice crystals bend sunlight into a ring about 22° from the sun. Move the sun out of the veil and the ring fades.':'Move the sun into the ice veil. Can you reveal its ring of light?';
-   button.textContent=night?'Switch to daylight':'Place the sun in the veil';
+   text.textContent=night?'Try this in daylight: move the sun behind the ice veil.':found?'Ice crystals bend sunlight into a halo about 22° from the sun.':'Move the sun into the ice veil. Can you reveal its ring of light?';
+   button.textContent=night?'Switch to daylight':found?'Show the halo again':'Place the sun in the veil';
   }
   note.dataset.state=mode;document.body.dataset.haloDiscovered=String(found);
   requestAnimationFrame(frame);
