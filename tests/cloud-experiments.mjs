@@ -26,6 +26,8 @@ auto.emit('click');tick(80);assert.equal(state.growth,1);assert.equal(state.stri
 assert.equal(hold.hidden,true,'completed prompts remove the spent hold control');
 assert.equal(panel.querySelector('.updraft-meter').hidden,true,'the progress bar gives way to the learning fact');
 assert.equal(panel.querySelector('p').textContent,'Warm air rises and cools, building the fluffy top above a level base.');
+assert.equal(panel.querySelector('.discovery-title').hidden,true,'the task heading gives way to the explanation');
+assert.equal(panel.querySelector('.discovery-label').textContent,'What you discovered');
 view(3);assert.equal(state.growth,0,'switching clouds resets the experiment');
 auto.emit('click');tick(100);assert.equal(state.growth,1);assert.equal(state.strike,true,'the storm completion requests one strike');
 state.strike=false;tick(30);assert.equal(state.strike,false,'completion does not request repeated strikes');

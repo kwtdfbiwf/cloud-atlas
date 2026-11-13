@@ -3,9 +3,9 @@
  const state=window.HaloDiscovery={amount:0};
  const target=document.createElement('div');target.id='halo-veil-target';target.hidden=true;target.setAttribute('aria-hidden','true');target.innerHTML='<span>Ice veil</span>';
  const note=document.createElement('aside');note.id='halo-discovery';note.hidden=true;note.setAttribute('aria-label','Try the cirrostratus halo');
- note.innerHTML='<p class="halo-instruction" role="status" aria-live="polite"></p><button type="button">Place the sun in the veil</button>';
+ note.innerHTML='<span class="discovery-label">Try it</span><h4 class="discovery-title">Find the halo</h4><p class="halo-instruction" role="status" aria-live="polite"></p><button type="button">Place the sun in the veil</button>';
  document.body.append(target,note);
- const text=note.querySelector('p'),button=note.querySelector('button');let previous='',found=false;
+ const text=note.querySelector('p'),button=note.querySelector('button'),title=note.querySelector('.discovery-title'),label=note.querySelector('.discovery-label');let previous='',found=false;
  button.onclick=()=>{
   if(document.body.classList.contains('night-sky')){document.querySelector('#sky-theme').click();return;}
   const veil=window.HaloVeil;if(!veil?.visible)return;
@@ -29,8 +29,9 @@
   const mode=night?'night':found?'found':'invite';
   if(mode!==previous){
    previous=mode;
-   text.textContent=night?'Try this in daylight: move the sun behind the ice veil.':found?'Ice crystals bend sunlight into a halo about 22° from the sun.':'Move the sun into the ice veil. Can you reveal its ring of light?';
-   button.textContent=night?'Switch to daylight':found?'Show the halo again':'Place the sun in the veil';
+   label.textContent=found&&!night?'What you discovered':'Try it';title.hidden=found&&!night;
+   text.textContent=night?'Try this in daylight: move the sun behind the ice veil.':found?'Ice crystals bend sunlight into a halo about 22° from the sun.':'Drag the sun into the marked ice veil to reveal a ring of light.';
+   button.textContent=night?'Switch to daylight':found?'Show again':'Reveal the halo';
   }
   note.dataset.state=mode;document.body.dataset.haloDiscovered=String(found);
   requestAnimationFrame(frame);

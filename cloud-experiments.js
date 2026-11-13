@@ -4,9 +4,9 @@
  const state=window.CloudExperiments={id:null,growth:0,engaged:0,strike:false};
  const panel=document.createElement('aside');panel.id='cloud-experiment';panel.hidden=true;
  panel.setAttribute('aria-label','Try a cloud experiment');
- panel.innerHTML='<p class="experiment-copy" role="status" aria-live="polite"></p><div class="updraft-meter" aria-hidden="true"><i></i></div><div class="experiment-actions"><button type="button" class="feed-cloud">Hold to grow</button><button type="button" class="auto-cloud">Grow it for me</button></div>';
+ panel.innerHTML='<span class="discovery-label">Try it</span><h4 class="discovery-title"></h4><p class="experiment-copy" role="status" aria-live="polite"></p><div class="updraft-meter" aria-hidden="true"><i></i></div><div class="experiment-actions"><button type="button" class="feed-cloud">Hold to grow</button><button type="button" class="auto-cloud">Grow it for me</button></div>';
  document.body.append(panel);
- const copy=panel.querySelector('p'),hold=panel.querySelector('.feed-cloud'),auto=panel.querySelector('.auto-cloud'),meter=panel.querySelector('.updraft-meter');
+ const copy=panel.querySelector('p'),hold=panel.querySelector('.feed-cloud'),auto=panel.querySelector('.auto-cloud'),meter=panel.querySelector('.updraft-meter'),title=panel.querySelector('.discovery-title'),label=panel.querySelector('.discovery-label');
  let holding=false,automatic=false,previous=performance.now(),mode='',keyboardHeld=false,fingerTried=false;
  const reset=()=>{holding=false;automatic=false;keyboardHeld=false;state.growth=0;state.engaged=0;state.strike=false;mode='';fingerTried=false;};
  const release=()=>{holding=false;keyboardHeld=false;};
@@ -37,16 +37,20 @@
   const next=id+':'+fingerTried+':'+(state.growth===1?'done':state.growth>0?'growing':'invite');
   if(mode!==next){
    mode=next;
-   copy.textContent=id===5?(fingerTried?'Altocumulus cloudlets look one to three fingers wide at arm’s length.':'One to three fingers wide? Try the finger test from the ground.'):id===0?(state.growth===1?'Warm air rises and cools, building the fluffy top above a level base.':state.growth>0?'Keep feeding the thermal. The top grows upwards; the flat base stays put.':'Give this cumulus a warm updraft. Hold to help its fluffy top grow.'):(state.growth===1?'At a stable layer, rising air spreads sideways into an anvil.':state.growth>0?'Keep the updraft going. Watch the tower rise and its icy top spread.':'Build a storm: hold to feed an updraft through the tower.');
+   const complete=id===5?fingerTried:state.growth===1;
+   label.textContent=complete?'What you discovered':'Try it';
+   title.textContent=id===5?'Compare the cloudlets':id===3?'Build an anvil':'Help a cloud grow';
+   title.hidden=complete;
+   copy.textContent=id===5?(fingerTried?'Altocumulus cloudlets look one to three fingers wide at arm’s length.':'Move a finger guide across the cloudlets to compare their size.'):id===0?(state.growth===1?'Warm air rises and cools, building the fluffy top above a level base.':state.growth>0?'Keep feeding the thermal. The top grows upwards; the flat base stays put.':'Hold the button to feed warm air into the cloud.'):(state.growth===1?'At a stable layer, rising air spreads sideways into an anvil.':state.growth>0?'Keep the updraft going. Watch the tower rise and its icy top spread.':'Hold the button to feed an updraft through the tower.');
    hold.textContent=id===5?(fingerTried?'Compare again':'Try the finger test'):id===3?'Hold to build':'Hold to grow';
    hold.hidden=id!==5&&state.growth===1;hold.disabled=hold.hidden;
-   auto.textContent=state.growth===1?'Try again':'Grow it for me';
+   auto.textContent=state.growth===1?'Try again':'Play automatically';
    if(hold.hidden&&document.activeElement===hold)auto.focus({preventScroll:true});
-   auto.hidden=id===5;meter.hidden=id===5||state.growth===1;
+   auto.hidden=id===5;meter.hidden=id===5||state.growth===0||state.growth===1;
   }
   meter.style.setProperty('--growth',state.growth);
   hold.dataset.holding=String(holding);
-  panel.dataset.cloud=String(id);panel.dataset.complete=String(state.growth===1);
+  panel.dataset.cloud=String(id);panel.dataset.complete=String(id===5?fingerTried:state.growth===1);
   requestAnimationFrame(frame);
  }
  requestAnimationFrame(frame);
