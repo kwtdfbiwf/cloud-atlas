@@ -149,7 +149,6 @@
       <span class="sheet-handle" aria-hidden="true"></span>
       <button type="button" class="sheet-close" aria-label="Close ${c.name.toLowerCase()} details">×</button>
       <div class="card-head">
-        <span class="abbr">${c.abbr}</span>
         <div><h3>${c.name}</h3><p class="latin">${c.latin}</p></div>
       </div>
       <p class="recognition-label">How to recognise it</p>
