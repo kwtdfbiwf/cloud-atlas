@@ -4,7 +4,7 @@
  const state=window.CloudExperiments={id:null,growth:0,engaged:0,strike:false};
  const panel=document.createElement('aside');panel.id='cloud-experiment';panel.hidden=true;
  panel.setAttribute('aria-label','Try a cloud experiment');
- panel.innerHTML='<span class="discovery-label">Try it</span><h4 class="discovery-title"></h4><p class="experiment-copy" role="status" aria-live="polite"></p><div class="updraft-meter" aria-hidden="true"><i></i></div><div class="experiment-actions"><button type="button" class="feed-cloud">Hold to grow</button><button type="button" class="auto-cloud">Grow it for me</button></div>';
+ panel.innerHTML='<span class="discovery-label">Explore</span><h4 class="discovery-title"></h4><p class="experiment-copy" role="status" aria-live="polite"></p><div class="updraft-meter" aria-hidden="true"><i></i></div><div class="experiment-actions"><button type="button" class="feed-cloud">Hold to grow</button><button type="button" class="auto-cloud">Grow it for me</button></div>';
  document.body.append(panel);
  const copy=panel.querySelector('p'),hold=panel.querySelector('.feed-cloud'),auto=panel.querySelector('.auto-cloud'),meter=panel.querySelector('.updraft-meter'),title=panel.querySelector('.discovery-title'),label=panel.querySelector('.discovery-label');
  let holding=false,automatic=false,previous=performance.now(),mode='',keyboardHeld=false,fingerTried=false;
@@ -38,13 +38,13 @@
   if(mode!==next){
    mode=next;
    const complete=id===5?fingerTried:state.growth===1;
-   label.textContent=complete?'What you discovered':'Try it';
-   title.textContent=id===5?'Compare the cloudlets':id===3?'Build an anvil':'Help a cloud grow';
+   label.textContent=complete?'What you discovered':'Explore';
+   title.textContent=id===5?'Look a little closer':id===3?'Stir up a storm':'Give it a little lift';
    title.hidden=complete;
-   copy.textContent=id===5?(fingerTried?'Altocumulus cloudlets look one to three fingers wide at arm’s length.':'Move a finger guide across the cloudlets to compare their size.'):id===0?(state.growth===1?'Warm air rises and cools, building the fluffy top above a level base.':state.growth>0?'Keep feeding the thermal. The top grows upwards; the flat base stays put.':'Hold the button to feed warm air into the cloud.'):(state.growth===1?'At a stable layer, rising air spreads sideways into an anvil.':state.growth>0?'Keep the updraft going. Watch the tower rise and its icy top spread.':'Hold the button to feed an updraft through the tower.');
-   hold.textContent=id===5?(fingerTried?'Compare again':'Try the finger test'):id===3?'Hold to build':'Hold to grow';
+   copy.textContent=id===5?(fingerTried?'Altocumulus cloudlets look one to three fingers wide at arm’s length.':'Slide a finger guide across these little cloudlets.'):id===0?(state.growth===1?'Warm air rises and cools, building the fluffy top above a level base.':state.growth>0?'Keep feeding the thermal. The top grows upwards; the flat base stays put.':'Hold to send a little warm air upwards.'):(state.growth===1?'At a stable layer, rising air spreads sideways into an anvil.':state.growth>0?'Keep the updraft going. Watch the tower rise and its icy top spread.':'Hold to wake the rising air inside the cloud.');
+   hold.textContent=id===5?(fingerTried?'Look again':'Take a closer look'):id===3?'Hold to stir':'Hold to lift';
    hold.hidden=id!==5&&state.growth===1;hold.disabled=hold.hidden;
-   auto.textContent=state.growth===1?'Try again':'Play automatically';
+   auto.textContent=state.growth===1?'Once more':id===3?'Let it unfold':'Watch it grow';
    if(hold.hidden&&document.activeElement===hold)auto.focus({preventScroll:true});
    auto.hidden=id===5;meter.hidden=id===5||state.growth===0||state.growth===1;
   }

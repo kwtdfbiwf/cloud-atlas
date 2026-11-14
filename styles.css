@@ -1528,3 +1528,16 @@ html body #top .end-collection summary{display:inline-flex;gap:8px}
 html body #top .end-collection .roster{margin-top:12px}
 @media(max-width:760px){html body #top{padding:150px 22px 60px}html body #top h2{font-size:clamp(48px,12vw,64px);margin-bottom:20px}html body #top .lede{font-size:21px}html body #top .summit-note{font-size:14px;line-height:1.6}.ending-invitation{margin-top:24px}html body #top .ending-primary{padding:15px 22px;font-size:14px}.ending-secondary{margin-top:26px;gap:8px 24px}}
 @media(max-height:500px) and (orientation:landscape){html body #top{padding:120px 24px 40px}html body #top h2{font-size:44px;max-width:none;margin-bottom:12px}html body #top .lede{font-size:20px;margin-bottom:8px}html body #top .summit-note{font-size:13px}.ending-invitation{margin-top:18px}.ending-secondary{margin-top:18px}}
+
+/* One continuous sky: passing observations rather than chapter gates. */
+html body #journey .interlude{height:100svh;min-height:500px}
+html body #journey .inter-inner{max-width:360px}
+html body #journey .interlude h3{font-size:clamp(29px,3.4vw,42px);line-height:1.15}
+html body #journey .interlude p:not(.eyebrow){font-size:17px;line-height:1.6;max-width:27ch}
+html body #journey .tier-head h2{font-size:clamp(28px,3vw,36px);line-height:1.1}
+html body #journey .layer-selector{gap:10px}
+html body #journey .next-cue{display:none}
+html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery){background:transparent;border:0;border-top:1px solid var(--task-line);border-radius:0;padding:16px 0 0}
+html body #journey .cloud-discovery-slot .discovery-label{font-size:9px;letter-spacing:.12em;opacity:.6}
+@media(max-width:760px){html body #journey .interlude{min-height:400px}html body #journey .interlude p:not(.eyebrow){font-size:16px}html body #journey .tier-head h2{font-size:28px}html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery){padding:12px 0 0}}
+@media(max-height:500px) and (orientation:landscape){html body #journey .interlude{min-height:375px}html body #journey .tier-head h2{font-size:25px}html body #journey .cloud-discovery-slot :is(#cloud-experiment,#halo-discovery){padding:8px 0 0}}

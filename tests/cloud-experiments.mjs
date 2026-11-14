@@ -35,6 +35,6 @@ auto.emit('click');tick(5);assert.ok(state.growth>0&&state.growth<1,'try again s
 blocked=true;tick();const stopped=state.growth;tick(10);assert.equal(state.growth,stopped,'dialogs pause automatic growth');assert.equal(panel.hidden,true);
 blocked=false;view(2);assert.equal(panel.hidden,true,'unrelated clouds have no prompt');
 context.window.SkyPreferences.reduced=true;view(3);auto.emit('click');tick();assert.equal(state.growth,1,'reduced motion gets the final state directly');assert.equal(state.strike,false,'reduced motion never requests a flash');
-view(5);assert.equal(hold.textContent,'Try the finger test');assert.equal(auto.hidden,true);
+view(5);assert.equal(hold.textContent,'Take a closer look');assert.equal(auto.hidden,true);
 view(null,false);assert.equal(panel.hidden,true);assert.equal(state.growth,0);
 console.log('PASS: holding/releasing, automatic growth, resets, modal pause, storm completion and reduced-motion protection.');

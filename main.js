@@ -310,17 +310,12 @@
   });
 
   function jumpTo(t) {
-    cancelAltitudeStop();
-    altitudeStop.visited.add(t.key);
-    markJump(t.centerScroll);
     scrollTo({ top: t.centerScroll, behavior: REDUCED ? 'auto' : 'smooth' });
   }
   $$('[data-jump]').forEach(b => b.addEventListener('click', () =>
-    b.dataset.jump === 'ground' ? (cancelAltitudeStop(), markJump(M.maxScroll), scrollTo({ top: M.maxScroll, behavior: REDUCED ? 'auto' : 'smooth' })) : jumpTo(tierByKey[b.dataset.jump])));
-  $('#descend').addEventListener('click', () => { cancelAltitudeStop(); markJump(M.maxScroll); scrollTo({ top: M.maxScroll, behavior: REDUCED ? 'auto' : 'smooth' }); });
+    b.dataset.jump === 'ground' ? scrollTo({ top: M.maxScroll, behavior: REDUCED ? 'auto' : 'smooth' }) : jumpTo(tierByKey[b.dataset.jump])));
+  $('#descend').addEventListener('click', () => { scrollTo({ top: M.maxScroll, behavior: REDUCED ? 'auto' : 'smooth' }); });
 
-  // gentle stops: a snap marker at the centre of every section (see .snap-mark in styles.css)
-  $$('.tier, .interlude, .top').forEach(sec => sec.insertAdjacentHTML('beforeend', '<span class="snap-mark" aria-hidden="true"></span>'));
 
   // ---------------------------------------------------------------- "looking at" label (3D only)
   document.body.insertAdjacentHTML('beforeend',
@@ -986,211 +981,8 @@ void main(){
   addEventListener('wheel', e => { if (e.deltaY > 0 && scrollY >= M.maxScroll - 2) showNudge(); }, { passive: true });
   addEventListener('keydown', e => { if ((e.key === 'ArrowDown' || e.key === 'PageDown') && scrollY >= M.maxScroll - 2) showNudge(); });
 
-  // A small, interruptible arrival at each altitude; never pull back from a long scroll.
-  // A tier rearms only after leaving its neighbourhood, so one gesture cannot trap you.
-  const altitudeStop = { active: null, visited: new Set(), intentUntil: 0, bypassUntil: 0, lastY: 0, jump: null };
-  function markJump(top) { altitudeStop.jump = { top, until: performance.now() + 4000 }; }
-  // any scroll of your own ends a button jump (titles then hold again)
-  const endJump = () => { altitudeStop.jump = null; };
-  addEventListener('touchstart', endJump, { passive: true });
-  addEventListener('wheel', endJump, { passive: true });
-  const STOP_TOTAL_MS = 1000;
-  let liftoffLock=null;
+  // The ascent follows the visitor's scroll; interludes never take control of it.
   const TOUCH = matchMedia('(pointer: coarse)').matches;
-  let touchScrollUntil = 0;
-  // on touch, a hold must also stop the flick's glide, or scrollTo and the glide fight (jitter)
-  const setScrollHold = on => { if (TOUCH) document.documentElement.classList.toggle('scroll-hold', on); };
-  addEventListener('touchend', () => { touchScrollUntil = performance.now() + 2500; }, { passive: true });
-  function cancelAltitudeStop() {
-    liftoffLock=null;delete document.body.dataset.liftoffLock;setScrollHold(false);
-    altitudeStop.active = null;
-    altitudeStop.intentUntil = 0;
-    altitudeStop.bypassUntil = performance.now() + 2500;
-    delete document.body.dataset.altitudeStop;
-  }
-  function localScrollTarget(target) {
-    return target instanceof Element && target.closest('.card, dialog, input, textarea, select, [contenteditable="true"]');
-  }
-  function beginAltitudeStop(t, now) {
-    if (Math.abs(scrollY - t.centerScroll) > 140) return;
-    altitudeStop.visited.add(t.key);
-    altitudeStop.active = { tier: t, from: scrollY, start: now, input: 0, settle: REDUCED ? 0 : 420 };
-    document.body.dataset.altitudeStop = t.key;
-    setScrollHold(true);
-  }
-  function nearbyAltitude(from, to) {
-    const direction = Math.sign(to - from);
-    if (!direction) return null;
-    return TIERS.filter(t => !altitudeStop.visited.has(t.key) &&
-      Math.abs(t.centerScroll - to) < 140 &&
-      (t.centerScroll - from) * direction > 2 &&
-      (t.centerScroll - to) * direction <= 60)
-      .sort((a, b) => Math.abs(a.centerScroll - from) - Math.abs(b.centerScroll - from))[0];
-  }
-  function updateAltitudeStop(now) {
-    const state = altitudeStop;
-    if(liftoffLock){
-      const stop=liftoffLock;
-      if(now<stop.until){
-        const p=smooth(0,stop.settle,now-stop.start);
-        scrollTo({top:stop.from+(stop.y-stop.from)*p,behavior:'instant'});
-        state.lastY=scrollY;return;
-      }
-      liftoffLock=null;delete document.body.dataset.liftoffLock;setScrollHold(false);
-    }
-    for (const t of TIERS) {
-      if (state.active?.tier !== t && Math.abs(scrollY - t.centerScroll) > Math.max(260, innerHeight * .5)) state.visited.delete(t.key);
-    }
-    if (state.active) {
-      const a = state.active;
-      const elapsed = now - a.start;
-      const p = a.settle ? Math.min(1, elapsed / a.settle) : 1;
-      // Smooth acceleration and deceleration, without the abrupt initial pull.
-      const eased = p * p * p * (p * (p * 6 - 15) + 10);
-      scrollTo({ top: a.from + (a.tier.centerScroll - a.from) * eased, behavior: 'instant' });
-      if (elapsed >= STOP_TOTAL_MS) {
-        state.active = null;
-        delete document.body.dataset.altitudeStop;
-        setScrollHold(false);
-      }
-    // Not on touch: a flick keeps gliding after the finger lifts, and grabbing it mid-glide
-    // to pull back to a level reads as a jolt. Titles still hold the page on touch.
-    } else if (!TOUCH && now > state.bypassUntil && now < state.intentUntil) {
-      const t = nearbyAltitude(state.lastY, scrollY);
-      if (t) beginAltitudeStop(t, now);
-    }
-    state.lastY = scrollY;
-  }
-  addEventListener('wheel', e => {
-    if(liftoffLock&&!e.ctrlKey){e.preventDefault();return;}
-    if (e.ctrlKey || localScrollTarget(e.target) || document.querySelector('dialog[open]')) return;
-    const now = performance.now();
-    if (now < altitudeStop.bypassUntil) return;
-    altitudeStop.intentUntil = now + 1200;
-    const delta = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
-    const fromAlt=altitudeAt(M.maxScroll-scrollY),toAlt=altitudeAt(M.maxScroll-scrollY-delta);
-    const arrival=interludeTitles.find(title=>title.armed&&fromAlt<title.threshold()&&toAlt>=title.threshold());
-    if(arrival){startInterlude(arrival,now,true);e.preventDefault();return;}
-    if (altitudeStop.active) {
-      const a = altitudeStop.active;
-      a.input += Math.abs(delta);
-      // Continued scrolling always wins over the brief settling effect.
-      if (now - a.start > 180 || a.input > 90) { cancelAltitudeStop(); return; }
-    } else {
-      const t = nearbyAltitude(scrollY, scrollY + delta);
-      if (t && Math.abs(scrollY - t.centerScroll) <= 140) beginAltitudeStop(t, now);
-    }
-    if (altitudeStop.active) e.preventDefault();
-  }, { passive: false });
-  addEventListener('touchmove', e => {
-    if(liftoffLock){e.preventDefault();return;}
-    if (localScrollTarget(e.target) || document.querySelector('dialog[open]')) return;
-    altitudeStop.intentUntil = performance.now() + 1200;
-    touchScrollUntil = performance.now() + 2500;
-    if (altitudeStop.active) cancelAltitudeStop();
-  }, { passive: false });
-  addEventListener('keydown', e => {
-    if (e.key === 'Escape') { cancelAltitudeStop(); return; }
-    if(liftoffLock&&['ArrowUp','ArrowDown','PageUp','PageDown',' ','Home','End'].includes(e.key)){e.preventDefault();return;}
-    if (localScrollTarget(e.target) || document.querySelector('dialog[open]')) return;
-    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', ' '].includes(e.key)) {
-      altitudeStop.intentUntil = performance.now() + 1200;
-      if (altitudeStop.active) cancelAltitudeStop();
-    }
-  });
-
-  // Decorative titles share one timed arrival; the original interludes stay in place.
-  const interludeTitles=[
-    {id:'liftoff-overlay',text:'Lifting off',alt:500},
-    {id:'freezing-overlay',text:'Past the freezing level',section:'freezing'},
-    {id:'ice-overlay',text:'Into the ice',section:'ice'}
-  ].map(title=>{
-    const el=$('#'+title.id);
-    el.innerHTML=title.text.split(' ').map(word=>`<span class="liftoff-word">${[...word].map(letter=>`<span class="liftoff-letter">${letter}</span>`).join('')}</span>`).join('');
-    title.el=el;title.letters=$$('.liftoff-letter',el);title.armed=true;title.start=null;
-    // the section repeating this title; its text waits until the big title has floated away
-    title.inner=$$('.interlude .inter-inner').find(inner=>$('h3',inner)?.textContent.trim()===title.text);
-    title.scrollY=()=>{
-      if(title.alt)return M.maxScroll-tierByKey.low.fromBottom*(title.alt/ALT.low);
-      const section=$('[data-interlude="'+title.section+'"]');
-      const rect=section.getBoundingClientRect();
-      return rect.top+scrollY+rect.height/2-innerHeight/2;
-    };
-    title.height=()=>altitudeAt(M.maxScroll-title.scrollY());
-    title.threshold=()=>title.height()-60;
-    title.words=$$('.liftoff-word',el);
-    return title;
-  });
-  // Shrink a title until its widest word fits the screen (phones with larger text settings or a
-  // fallback font would otherwise push it past the edges). offsetWidth ignores the float transforms.
-  function fitTitle(title){
-    title.el.style.fontSize='';
-    const room=innerWidth*.88,widest=Math.max(...title.words.map(w=>w.offsetWidth));
-    if(widest>room)title.el.style.fontSize=`${(parseFloat(getComputedStyle(title.el).fontSize)*room/widest).toFixed(1)}px`;
-  }
-  const fitTitles=()=>interludeTitles.forEach(fitTitle);
-  fitTitles();addEventListener('resize',fitTitles);
-  document.fonts?.ready.then(fitTitles);
-  function startInterlude(title,now,hold) {
-    fitTitle(title);
-    title.armed=false;title.start=now;
-    if(hold){
-      const y=title.scrollY();
-      liftoffLock={from:scrollY,y,start:now,settle:REDUCED?0:Math.min(700,250+Math.abs(scrollY-y)*.1),until:now+(REDUCED?2100:3200)};
-      document.body.dataset.liftoffLock='true';
-      altitudeStop.active=null;
-      setScrollHold(true);
-    }
-  }
-  // Each title is a barrier on the way up: however fast you scroll, reaching or crossing its
-  // spot holds the page there until it has fully played. Works on the real scroll position (not
-  // the eased camera), so a fast flick can't skip it. A button jump passes titles instead.
-  let barrierY=null;
-  function titleBarrier(now){
-    const y=scrollY,prev=barrierY;barrierY=y;
-    const jump=altitudeStop.jump;
-    const jumping=!!jump&&now<jump.until&&Math.abs(y-jump.top)>4;
-    if(jump&&!jumping)altitudeStop.jump=null;
-    const spots=interludeTitles.map(title=>[title,title.scrollY()]);
-    // opening the page part-way up: titles already behind you don't pull you back
-    if(prev===null){spots.forEach(([title,ty])=>{if(y<ty-2)title.armed=false;});return;}
-    if(liftoffLock)return;
-    for(const [title,ty] of spots){
-      // well back below a title: it plays again next time you climb past
-      if(y>ty+innerHeight*.6&&!title.armed){title.armed=true;title.start=null;}
-    }
-    if(!(y<prev))return; // only on the way up (scrollY falls as you climb)
-    // the lowest unplayed title you've reached
-    const hit=spots.filter(([title,ty])=>title.armed&&y<=ty+2).sort((a,b)=>b[1]-a[1])[0];
-    if(!hit)return;
-    if(jumping){spots.forEach(([title,ty])=>{if(y<=ty+2)title.armed=false;});return;}
-    startInterlude(hit[0],now,true);
-  }
-  function updateLiftoffOverlay(alt) {
-    const now=performance.now();
-    interludeTitles.forEach(title=>{
-      // the section text stays hidden while its title is still to come, so it never flashes up first
-      if(title.start===null){title.el.style.opacity='0';title.inner?.classList.toggle('waiting',title.armed);return;}
-      const elapsed=(now-title.start)/1000;
-      title.inner?.classList.toggle('waiting',elapsed<(REDUCED?1.6:2.2));
-      const enter=smooth(0,.5,elapsed);
-      const complete=elapsed>(REDUCED?2.1:3.2);
-      title.el.style.opacity=complete?'0':'1';
-      title.el.dataset.phase=complete?'complete':elapsed<.5?'appearing':elapsed<1.1?'holding':'floating';
-      title.el.dataset.elapsed=elapsed.toFixed(2);
-      title.letters.forEach((letter,i)=>{
-        const stagger=i/Math.max(1,title.letters.length-1)*.405;
-        const exit=REDUCED?smooth(1.1,1.9,elapsed):smooth(1.1+stagger,2.6+stagger,elapsed);
-        letter.style.opacity=(enter*(1-exit)).toFixed(3);
-        // narrow screens spread the letters less, so they float up rather than off the sides
-        const x=REDUCED?0:(i-(title.letters.length-1)/2)*6*Math.min(1,innerWidth/900)*exit;
-        const y=REDUCED?0:18*(1-enter)-(160+(i%3)*28)*exit;
-        const turn=REDUCED?0:((i%2?-1:1)*(3+i%4))*exit;
-        letter.style.transform=`translate(${x.toFixed(2)}px,${y.toFixed(2)}px) rotate(${turn.toFixed(2)}deg)`;
-        letter.style.filter=REDUCED||exit<.01?'none':`blur(${(exit*5).toFixed(2)}px)`;
-      });
-    });
-  }
 
   const crossingMist = $('#cloud-crossing');
   function updateCloudCrossing(alt) {
@@ -1204,7 +996,7 @@ void main(){
       const strength = Math.pow(Math.cos(p * Math.PI / 2), 2);
       if (strength > density) { density = strength; progress = p; }
     }
-    crossingMist.style.opacity = (density * (document.body.classList.contains('night-sky') ? .34 : .52)).toFixed(3);
+    crossingMist.style.opacity = (density * (document.body.classList.contains('night-sky') ? .18 : .28)).toFixed(3);
     crossingMist.style.transform = `translateY(${(progress * 22).toFixed(2)}vh) scale(${(1.04 + density * .09).toFixed(3)})`;
   }
 
@@ -1248,8 +1040,6 @@ void main(){
       }
     }
 
-    updateAltitudeStop(nowMs);
-    titleBarrier(nowMs);
     const target = M.maxScroll - scrollY;
     const prevCam = camS;
     camS = target; // camera, section and altimeter use the same scroll position
@@ -1292,7 +1082,6 @@ void main(){
       : 'Shaping your little sky…';
     const alt = altitudeAt(camS);
     updateCloudCrossing(alt);
-    updateLiftoffOverlay(alt);
     lastAltM = alt;
     if(photoMode){const t=TIERS.reduce((a,b)=>b.vis>a.vis?b:a);window.PhotoSky?.render({alt,activeId:t.vis>.15?t.cur:null,weatherRain:null});lookingEl.classList.remove('on');}
 
@@ -1346,7 +1135,6 @@ void main(){
     measure();
     scrollTo(0, M.maxScroll);
     camS = M.maxScroll - scrollY;
-    altitudeStop.lastY = scrollY;
     document.body.classList.remove('loading');
     requestAnimationFrame(frame);
   }
@@ -1356,7 +1144,6 @@ void main(){
     const toolbarOnly = TOUCH && innerWidth === lastW && Math.abs(innerHeight - lastH) < 160;
     if (toolbarOnly) return;
     lastW = innerWidth; lastH = innerHeight;
-    cancelAltitudeStop();
     clearTimeout(resizeT);
     resizeT = setTimeout(() => {
       // keep the same distance from the ground across resizes
