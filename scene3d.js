@@ -57,7 +57,7 @@ function skyColour(day,night){
 const themeColour=document.querySelector('meta[name="theme-color"]');
 // The colour changes continuously with altitude: warm open air, cooler middle, deep ice-blue.
 function altitudePalette(alt){
- const stops=[{at:0,top:'#688fe8',middle:'#82a8ed',bottom:'#b2caf2'},{at:4500,top:'#536ed4',middle:'#718fe3',bottom:'#a0b9ec'},{at:9000,top:'#384fa9',middle:'#5b77cb',bottom:'#8fa8e2'},{at:12500,top:'#2b3c88',middle:'#4d64b5',bottom:'#91abe4'}];
+ const stops=[{at:0,top:'#6b91df',middle:'#9cb9ed',bottom:'#e6d8d9'},{at:1200,top:'#658bdf',middle:'#8fb3ed',bottom:'#d7dce9'},{at:4500,top:'#416fc5',middle:'#729ddc',bottom:'#b0cce7'},{at:9000,top:'#354a9c',middle:'#677bc5',bottom:'#a7b9e4'},{at:12500,top:'#283675',middle:'#4c5ba2',bottom:'#91a3d2'}];
  let i=1;while(i<stops.length-1&&alt>stops[i].at)i++;
  const a=stops[i-1],b=stops[i],f=softStep(a.at,b.at,alt);
  return Object.fromEntries(['top','middle','bottom'].map(key=>[key,new THREE.Color(a[key]).lerp(new THREE.Color(b[key]),f).getStyle()]));
@@ -65,9 +65,11 @@ function altitudePalette(alt){
 function background(alt,updateSky=false){const key=Math.round(alt/150)+':'+Math.round(nightBlend*60)+':'+Math.round(stormBlend*60);if(key===bgKey)return;bgKey=key;
  const palette=altitudePalette(alt),top=skyColour(palette.top,'#101635'),middle=skyColour(palette.middle,'#1c2854'),bottom=skyColour(palette.bottom,'#3c4c79');
  const g=bctx.createLinearGradient(0,0,512,768);g.addColorStop(0,top);g.addColorStop(.48,middle);g.addColorStop(1,bottom);bctx.fillStyle=g;bctx.fillRect(0,0,512,768);
+ const warmth=(1-softStep(1200,4500,alt))*(1-nightBlend)*(1-stormBlend);
+ const horizon=bctx.createRadialGradient(85,760,10,85,760,560);horizon.addColorStop(0,`rgba(255,207,174,${warmth*.24})`);horizon.addColorStop(1,'rgba(255,207,174,0)');bctx.fillStyle=horizon;bctx.fillRect(0,0,512,768);
  const glow=bctx.createRadialGradient(500,0,4,500,0,490);glow.addColorStop(0,'#c8b6ee30');glow.addColorStop(1,'#c8b6ee00');bctx.fillStyle=glow;bctx.fillRect(0,0,512,768);
  if(updateSky){
-   vectorSky.style.background=`radial-gradient(ellipse at 100% 0%,#cfbdf122,transparent 65%),linear-gradient(160deg,${top} 0%,${middle} 48%,${bottom} 100%)`;
+   vectorSky.style.background=`radial-gradient(ellipse at 15% 100%,rgba(255,207,174,${(warmth*.24).toFixed(3)}),transparent 65%),radial-gradient(ellipse at 100% 0%,#cfbdf122,transparent 65%),linear-gradient(160deg,${top} 0%,${middle} 48%,${bottom} 100%)`;
    vectorSky.style.setProperty('--night-opacity',nightBlend.toFixed(3));
    document.documentElement.style.background=vectorSky.style.background;document.documentElement.style.backgroundColor=middle;themeColour?.setAttribute('content',middle);
  }
@@ -81,7 +83,7 @@ draco.dispose();
 // The minimum shade stays lavender-blue, so undersides never fall into black.
 function opalMaterial(){return new THREE.ShaderMaterial({
  vertexColors:true,
- uniforms:{uBuild:{value:0},uExperiment:{value:0},uBase:{value:0},uHeight:{value:1},uLightning:{value:0},uOpacity:{value:1},uStorm:{value:0},uGloom:{value:0},uSunDir:{value:new THREE.Vector3(.51,.76,1.2)},uSunLow:{value:0},uNight:{value:nightBlend},uKind:{value:0},uTime:{value:0},uMotion:{value:1}},
+ uniforms:{uAltitude:{value:0},uBuild:{value:0},uExperiment:{value:0},uBase:{value:0},uHeight:{value:1},uLightning:{value:0},uOpacity:{value:1},uStorm:{value:0},uGloom:{value:0},uSunDir:{value:new THREE.Vector3(.51,.76,1.2)},uSunLow:{value:0},uNight:{value:nightBlend},uKind:{value:0},uTime:{value:0},uMotion:{value:1}},
  vertexShader:`uniform float uBuild;uniform float uExperiment;uniform float uBase;uniform float uHeight;uniform float uTime;uniform float uKind;uniform float uMotion;
  varying vec3 vN;varying vec3 vP;varying vec3 vPaint;
  void main(){
@@ -93,7 +95,7 @@ function opalMaterial(){return new THREE.ShaderMaterial({
        p+=normal*(.075+.025*max(normal.y,0.))*sin(uTime*.38+position.y*.35+position.x*.25);
      }else if(abs(uKind-7.)<.5){
        // High ice fibres lengthen gently along the wind, without vertical bobbing.
-       p.x+=.16*sin(uTime*.22+position.y*.3)*smoothstep(-3.,3.,position.x);
+       p.x+=.10*sin(uTime*.12+position.y*.3)*smoothstep(-3.,3.,position.x);
      }else if(abs(uKind-3.)<.5){
        // The tower builds almost imperceptibly while its base stays steady.
        p.y+=.10*sin(uTime*.24)*smoothstep(-3.,4.,position.y);
@@ -103,7 +105,7 @@ function opalMaterial(){return new THREE.ShaderMaterial({
        p.y+=.045*sin(position.x*.24-uTime*.24);
      }else{
        // Patch clouds soften and swell in an unhurried wave across the band.
-       p+=normal*.045*sin(uTime*.3+position.x*.35+position.z*.22);
+       p+=normal*.035*sin(uTime*.2+position.x*.35+position.z*.22);
      }
    }
    // Grow upwards from the existing base, without stretching the flat underside.
@@ -118,7 +120,7 @@ function opalMaterial(){return new THREE.ShaderMaterial({
    }
    gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);
  }`,
- fragmentShader:`uniform float uKind;uniform float uLightning;uniform float uOpacity;uniform float uStorm;uniform float uGloom;uniform float uNight;uniform vec3 uSunDir;uniform float uSunLow;varying vec3 vN;varying vec3 vP;varying vec3 vPaint;
+ fragmentShader:`uniform float uAltitude;uniform float uKind;uniform float uLightning;uniform float uOpacity;uniform float uStorm;uniform float uGloom;uniform float uNight;uniform vec3 uSunDir;uniform float uSunLow;varying vec3 vN;varying vec3 vP;varying vec3 vPaint;
  void main(){
  vec3 n=normalize(vN);
  // Soft colour and local billow shadowing were painted offline in Blender.
@@ -133,6 +135,9 @@ function opalMaterial(){return new THREE.ShaderMaterial({
  float shade=clamp(1.+(facing-originalFacing)*.55,.65,1.25);
  col*=mix(1.,shade,daylight);
  col*=mix(vec3(1.),vec3(1.07,.9,.78),uSunLow*daylight*(1.-uGloom));
+ // Warm low-level light gradually gives way to cool ice-blue illumination.
+ vec3 airTint=mix(vec3(1.07,1.,.94),vec3(.94,.98,1.07),uAltitude);
+ col*=mix(vec3(1.),airTint,daylight*(1.-uGloom));
  col=mix(col,col*vec3(.82,.84,.97),uStorm*.35);
  float grey=dot(col,vec3(.2126,.7152,.0722));
  col=mix(col,vec3(grey)*vec3(.58,.66,.82),uGloom*.68);
@@ -264,8 +269,9 @@ S.lowerQuality=()=>{if(quality<=.7)return false;quality=Math.max(.7,quality-.15)
 function prepare(id,alt,opacity=1,ground=false){
  layers.forEach((g,j)=>{g.visible=j===id;});const g=layers[id];
  g.position.y=ground?0:clamp((levels[id]-alt)/1800,-2.5,2.5)*13;
- for(const mesh of g.children){const d=mesh.userData;mesh.position.x=d.x+Math.sin(time*.07+d.phase)*2;mesh.position.y=d.y;
+ for(const mesh of g.children){const d=mesh.userData;const drift=id>=7?.018:id>=4?.035:.065;const sway=id>=7?.8:id>=4?1.3:2;mesh.position.x=d.x+Math.sin(time*drift+d.phase)*sway;mesh.position.y=d.y;
  const experiment=!ground&&window.CloudExperiments?.id===id?window.CloudExperiments:null;
+ mesh.material.uniforms.uAltitude.value=softStep(1200,9500,ground?levels[id]:alt);
  mesh.material.uniforms.uBuild.value=experiment?.growth||0;
  mesh.material.uniforms.uExperiment.value=experiment?.engaged||0;
  const alpha=opacity*(id===8?.2:id===6?.65:id===7?.82:1);mesh.material.transparent=alpha<.999;mesh.material.opacity=alpha;mesh.material.uniforms.uOpacity.value=alpha;mesh.material.uniforms.uMotion.value=ground||window.SkyPreferences?.reduced?0:1;mesh.material.depthWrite=alpha>.98;}
@@ -288,7 +294,7 @@ S.render=({alt=0,clearSky=false,weatherRain=null,activeId=null,waterCard=null,wa
  document.body.dataset.storm=stormBlend.toFixed(3);
  const light=window.SunLight||{x:.755,y:.12};
  const lightX=(light.x-.5)*2,lightY=(.5-light.y)*2;
- cloudMaterials.forEach(m=>{m.uniforms.uSunDir.value.set(lightX,lightY,1.2);m.uniforms.uSunLow.value=softStep(.4,.9,light.y);m.uniforms.uGloom.value=stormBlend;m.uniforms.uNight.value=nightBlend;m.uniforms.uTime.value=time;m.uniforms.uMotion.value=reduced?0:1;});
+ cloudMaterials.forEach(m=>{m.uniforms.uSunDir.value.set(lightX,lightY,1.2);m.uniforms.uSunLow.value=softStep(.4,.9,light.y);m.uniforms.uGloom.value=stormBlend;m.uniforms.uNight.value=nightBlend;m.uniforms.uTime.value=time*(m.uniforms.uKind.value>=7?.55:m.uniforms.uKind.value>=4?.8:1);m.uniforms.uMotion.value=reduced?0:1;});
  const id=activeId??(alt<2700?selections.low:alt<7000?selections.mid:selections.high);
  if(id!==last){previous=last;last=id;mix=0;}mix=reduced?1:Math.min(1,mix+dt*2);
  background(alt,true);celestialMotion(reduced,id);prepare(id,alt,mix);
