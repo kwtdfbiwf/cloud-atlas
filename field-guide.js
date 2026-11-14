@@ -18,7 +18,7 @@
   const SKY_KEY='cloud-atlas-sky-place';
   let skyPlace=null;try{skyPlace=JSON.parse(localStorage.getItem(SKY_KEY)||'null');}catch{}
   function skyShell(){
-    return `<p class="field-intro">Choose a place to open your own sky journey. Scroll up through only the clouds estimated there, with weather for your chosen time.</p>
+    return `<p class="field-intro">Choose a place for your own sky journey. Weather data suggests likely cloud types; it doesn’t directly identify the clouds overhead.</p>
     <form class="sky-search" role="search"><button type="button" class="sky-locate">Use my location</button><label class="sky-field"><span class="sr-only">Town or city</span><input type="search" name="q" placeholder="Or type a town or city" autocomplete="off" required></label><button type="submit">Search</button></form>
     <ul class="sky-places" hidden></ul><div class="sky-result" aria-live="polite"></div>`;
   }
